@@ -8,7 +8,7 @@ const X = 49
 const Y = 260
 const LEVER = 32
 const WIDTH = -8
-const D = 60
+const D = 50
 const FLIPPER_DIST = 57
 const FLIP_DURATION = 70
 const MINL = Phaser.Math.DegToRad(210)
@@ -44,6 +44,8 @@ export default class Game extends Phaser.Scene {
   leftLever?: MatterJS.BodyType
   rightLever?: MatterJS.BodyType
   ballImage?: Phaser.GameObjects.Image
+  flipperImageLeft?: Phaser.GameObjects.Image
+  flipperImageRight?: Phaser.GameObjects.Image
   leftTween?: { x: number }
   rightTween?: { x: number }
 
@@ -73,8 +75,16 @@ export default class Game extends Phaser.Scene {
     this.createFlipper(X, Y, true)
     this.createFlipper(X + FLIPPER_DIST, Y, false)
 
+    const bg = this.add.image(0, 7, 'bg').setOrigin(0, 0)
+    this.flipperImageLeft = this.add
+      .sprite(X - 2, Y + 2, 'flipper', 0)
+      .setOrigin(0, 0.5)
+    this.flipperImageRight = this.add
+      .sprite(X - 2 + (FLIPPER_DIST + 4), Y + 2, 'flipper', 0)
+      .setOrigin(1, 0.5)
+      .setFlipX(true)
     this.ballImage = this.add.image(0, 0, 'ball')
-    this.ball = this.matter.add.circle(START.x, START.y, 7.5, BALL_CONF)
+    this.ball = this.matter.add.circle(START.x, START.y, 7, BALL_CONF)
 
     this.input.keyboard
       .addKey('left')
@@ -117,6 +127,11 @@ export default class Game extends Phaser.Scene {
     const target = isLeft ? this.leftTween : this.rightTween
     const max = isLeft ? MAXL : MAXR
     const min = isLeft ? MINL : MINR
+    if (isLeft) {
+      this.flipperImageLeft?.setFrame(isDown ? 2 : 0)
+    } else {
+      this.flipperImageRight?.setFrame(isDown ? 2 : 0)
+    }
     this.tweens.add({
       targets: [target],
       x: isDown ? max : min,

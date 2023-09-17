@@ -6,7 +6,7 @@ export default {
   backgroundColor: '#081820',
   physics: {
     default: 'matter',
-    matter: { debug: true, gravity: { y: 0.3 } },
+    matter: { debug: false, gravity: { y: 0.3 } },
   },
   pixelArt: true,
   scale: {

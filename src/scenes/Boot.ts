@@ -16,6 +16,11 @@ export default class Boot extends Phaser.Scene {
     })
     this.load.bitmapFont('gem', 'assets/gem.png', 'assets/gem.xml')
     this.load.image('ball', 'assets/ball.png')
+    this.load.image('bg', 'assets/bg.png')
+    this.load.spritesheet('flipper', 'assets/flipper.png', {
+      frameWidth: 24,
+      frameHeight: 23,
+    })
     this.load.xml('board', 'assets/board.svg')
     this.load.xml('bounce', 'assets/bounce.svg')
     this.load.xml('flipper', 'assets/flipper.svg')
