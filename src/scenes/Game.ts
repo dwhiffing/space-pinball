@@ -91,7 +91,12 @@ export default class Game extends Phaser.Scene {
 
   update() {
     if (!this.ballImage || !this.ball) return
-    if (this.ball.position.y > 300) {
+    if (this.ball.position.y < this.cameras.main.height) {
+      this.cameras.main.scrollY = 0
+    } else {
+      this.cameras.main.scrollY = this.cameras.main.height
+    }
+    if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
       this.matter.setVelocity(this.ball, 0, 0)
       this.matter.alignBody(this.ball, START.x, START.y, CENTER)
     }

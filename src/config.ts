@@ -10,8 +10,8 @@ export default {
   },
   pixelArt: true,
   scale: {
-    width: 180,
-    height: 288,
+    width: 160,
+    height: 144,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
