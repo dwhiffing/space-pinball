@@ -16,7 +16,7 @@ export default class Boot extends Phaser.Scene {
     })
     this.load.bitmapFont('gem', 'assets/gem.png', 'assets/gem.xml')
     this.load.image('ball', 'assets/ball.png')
-    this.load.image('bg', 'assets/bg.png')
+    this.load.image('board', 'assets/board.png')
     this.load.spritesheet('flipper', 'assets/flipper.png', {
       frameWidth: 24,
       frameHeight: 23,

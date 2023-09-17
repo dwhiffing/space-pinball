@@ -4,18 +4,18 @@ import Phaser from 'phaser'
 // #88c070
 // #e0f8d0
 
-const X = 49
+const X = 51
 const Y = 260
 const LEVER = 32
 const WIDTH = -8
-const D = 50
+const D = 55
 const FLIPPER_DIST = 57
 const FLIP_DURATION = 70
 const MINL = Phaser.Math.DegToRad(210)
 const MAXL = Phaser.Math.DegToRad(210 - D)
 const MINR = Phaser.Math.DegToRad(330)
 const MAXR = Phaser.Math.DegToRad(330 + D)
-const START = { x: 30, y: 40 }
+const START = { x: 160, y: 240 }
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 
@@ -44,8 +44,8 @@ export default class Game extends Phaser.Scene {
   leftLever?: MatterJS.BodyType
   rightLever?: MatterJS.BodyType
   ballImage?: Phaser.GameObjects.Image
-  flipperImageLeft?: Phaser.GameObjects.Image
-  flipperImageRight?: Phaser.GameObjects.Image
+  flipperImageLeft?: Phaser.GameObjects.Sprite
+  flipperImageRight?: Phaser.GameObjects.Sprite
   leftTween?: { x: number }
   rightTween?: { x: number }
 
@@ -58,29 +58,29 @@ export default class Game extends Phaser.Scene {
 
     const boardSVG = this.cache.xml.get('board')
     const board = this.matter.add.fromSVG(0, 0, boardSVG, 1, BOARD_CONF)
-    this.matter.alignBody(board, 95, 280, Phaser.Display.Align.BOTTOM_CENTER)
+    this.matter.alignBody(board, 96, 290, Phaser.Display.Align.BOTTOM_CENTER)
     board.restitution = 0.1
     board.friction = 0.001
     const bounceSVG = this.cache.xml.get('bounce')
     const bounceL = this.matter.add.fromSVG(0, 0, bounceSVG, 1, BOARD_CONF)
     const bounceR = this.matter.add.fromSVG(0, 0, bounceSVG, 1, BOARD_CONF)
     this.matter.body.scale(bounceR, -1, 1)
-    this.matter.alignBody(bounceL, 45, 238, Phaser.Display.Align.BOTTOM_CENTER)
-    this.matter.alignBody(bounceR, 116, 238, Phaser.Display.Align.BOTTOM_CENTER)
+    this.matter.alignBody(bounceL, 43, 240, Phaser.Display.Align.BOTTOM_CENTER)
+    this.matter.alignBody(bounceR, 121, 240, Phaser.Display.Align.BOTTOM_CENTER)
     bounceL.friction = 0.001
     bounceR.friction = 0.001
-    // bounceL.restitution = 1
-    // bounceR.restitution = 1
+    bounceL.restitution = 1
+    bounceR.restitution = 1
 
     this.createFlipper(X, Y, true)
     this.createFlipper(X + FLIPPER_DIST, Y, false)
 
-    const bg = this.add.image(0, 7, 'bg').setOrigin(0, 0)
+    const bg = this.add.image(0, 2, 'board').setOrigin(0, 0)
     this.flipperImageLeft = this.add
-      .sprite(X - 2, Y + 2, 'flipper', 0)
+      .sprite(X - 4, Y + 1, 'flipper', 0)
       .setOrigin(0, 0.5)
     this.flipperImageRight = this.add
-      .sprite(X - 2 + (FLIPPER_DIST + 4), Y + 2, 'flipper', 0)
+      .sprite(X - 4 + (FLIPPER_DIST + 8), Y + 1, 'flipper', 0)
       .setOrigin(1, 0.5)
       .setFlipX(true)
     this.ballImage = this.add.image(0, 0, 'ball')
@@ -101,11 +101,15 @@ export default class Game extends Phaser.Scene {
 
   update() {
     if (!this.ballImage || !this.ball) return
+    let y = this.cameras.main.height * 1.5
+    let x = this.cameras.main.width / 2
     if (this.ball.position.y < this.cameras.main.height) {
-      this.cameras.main.scrollY = 0
-    } else {
-      this.cameras.main.scrollY = this.cameras.main.height
+      y = this.cameras.main.height / 2
     }
+    if (this.ball.position.x > this.cameras.main.width) {
+      x = this.cameras.main.width / 2 + 32
+    }
+    this.cameras.main.pan(x, y, 120, undefined, true)
     if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
       this.matter.setVelocity(this.ball, 0, 0)
       this.matter.alignBody(this.ball, START.x, START.y, CENTER)
@@ -120,23 +124,25 @@ export default class Game extends Phaser.Scene {
   onFlipRightUp = () => this.onFlip(false, false)
 
   onShoot = () => {
-    this.matter.applyForceFromAngle(this.ball!, 0.2, Phaser.Math.DegToRad(-90))
+    this.matter.applyForceFromAngle(this.ball!, 0.25, Phaser.Math.DegToRad(-90))
   }
 
   onFlip = (isLeft?: boolean, isDown?: boolean) => {
     const target = isLeft ? this.leftTween : this.rightTween
     const max = isLeft ? MAXL : MAXR
     const min = isLeft ? MINL : MINR
-    if (isLeft) {
-      this.flipperImageLeft?.setFrame(isDown ? 2 : 0)
-    } else {
-      this.flipperImageRight?.setFrame(isDown ? 2 : 0)
-    }
     this.tweens.add({
       targets: [target],
       x: isDown ? max : min,
       duration: FLIP_DURATION,
-      onUpdate: () => {
+      onUpdate: (a, b, c) => {
+        const v =
+          a.totalProgress < 0.3 ? 0 : a.totalProgress < 0.6 ? 1 : isDown ? 2 : 0
+        if (isLeft) {
+          this.flipperImageLeft?.setFrame(v)
+        } else {
+          this.flipperImageRight?.setFrame(v)
+        }
         const lever = isLeft ? this.leftLever : this.rightLever
         if (!lever) return
         lever.position.x =
