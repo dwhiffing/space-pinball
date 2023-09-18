@@ -16,6 +16,7 @@ const MAXL = Phaser.Math.DegToRad(210 - D)
 const MINR = Phaser.Math.DegToRad(330)
 const MAXR = Phaser.Math.DegToRad(330 + D)
 // const START = { x: 80, y: 28 }
+// const START = { x: 110, y: 200 }
 const START = { x: 160, y: 240 }
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
@@ -140,13 +141,18 @@ export default class Game extends Phaser.Scene {
 
   createSlingshot = (isLeft: boolean) => {
     const bounceSVG = this.cache.xml.get('bounce')
-    const sling = this.matter.add.fromSVG(0, 0, bounceSVG, 1, BOARD_CONF)
-    if (!isLeft) this.matter.body.scale(sling, -1, 1)
+    const slingBase = this.matter.add.fromSVG(0, 0, bounceSVG, 1, BOARD_CONF)
+    const sling = this.matter.add.rectangle(0, 0, 3, 30, {
+      isStatic: true,
+      angle: isLeft ? -0.48 : 0.48,
+    })
+
+    if (!isLeft) this.matter.body.scale(slingBase, -1, 1)
     const a = Phaser.Display.Align.BOTTOM_CENTER
-    this.matter.alignBody(sling, isLeft ? 43 : 121, 240, a)
-    sling.label = 'bounce'
-    sling.friction = F
-    // sling.restitution = 1
+    this.matter.alignBody(slingBase, isLeft ? 43 : 121, 240, a)
+    this.matter.alignBody(sling, isLeft ? 46 : 114, 240, a)
+    sling.label = 'sling'
+    slingBase.friction = F
   }
 
   createBumper = (x: number, y: number) => {
@@ -197,6 +203,20 @@ export default class Game extends Phaser.Scene {
 
   onCollisionStart = (event: any, bodyA: IBody, bodyB: IBody) => {
     if (
+      (bodyA.label == 'ball' && bodyB.label == 'sling') ||
+      (bodyB.label == 'ball' && bodyA.label == 'sling')
+    ) {
+      const sling =
+        bodyA.label == 'ball' && bodyB.label == 'sling' ? bodyB : bodyA
+
+      const angle =
+        sling.position.x < 80
+          ? Phaser.Math.DegToRad(-45)
+          : Phaser.Math.DegToRad(215)
+      this.time.delayedCall(10, () =>
+        this.matter.applyForceFromAngle(this.ball!, 0.035, angle),
+      )
+    } else if (
       (bodyA.label == 'ball' && bodyB.label == 'bumper') ||
       (bodyB.label == 'ball' && bodyA.label == 'bumper')
     ) {
