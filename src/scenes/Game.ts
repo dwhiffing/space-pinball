@@ -86,6 +86,7 @@ export default class Game extends Phaser.Scene {
     this.createSlingshot(true)
     this.createFlipper(true)
     this.createSlingshot(false)
+    this.createPost()
     this.createFlipper(false)
     this.bumpers = BUMPERS.map((b) => this.createBumper(b.x, b.y))
     this.createBall()
@@ -129,6 +130,12 @@ export default class Game extends Phaser.Scene {
     this.matter.alignBody(board, 96, 290, Phaser.Display.Align.BOTTOM_CENTER)
     board.friction = F / 10
     this.add.image(0, 2, 'board').setOrigin(0, 0)
+  }
+
+  createPost = () => {
+    this.matter.add.rectangle(54, 58, 2, 4, { isStatic: true })
+    this.matter.add.rectangle(71, 51, 2, 4, { isStatic: true })
+    this.matter.add.rectangle(89, 48, 2, 4, { isStatic: true })
   }
 
   createSlingshot = (isLeft: boolean) => {
