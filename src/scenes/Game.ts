@@ -209,7 +209,7 @@ export default class Game extends Phaser.Scene {
 
   setupInput = () => {
     this.input.keyboard
-      .addKey('left')
+      .addKey('Z')
       .on('down', this.onFlipLeftDown)
       .on('up', this.onFlipLeftUp)
 
@@ -218,7 +218,10 @@ export default class Game extends Phaser.Scene {
       .on('down', this.onFlipRightDown)
       .on('up', this.onFlipRightUp)
 
-    this.input.keyboard.addKey('space').on('up', this.onShoot)
+    this.input.keyboard.addKey('down').on('up', this.onShoot)
+    this.input.keyboard.addKey('space').on('down', () => this.onTilt('up'))
+    this.input.keyboard.addKey('left').on('down', () => this.onTilt('left'))
+    this.input.keyboard.addKey('X').on('down', () => this.onTilt('right'))
   }
 
   onFlip = (isLeft?: boolean, isDown?: boolean) => {
@@ -252,7 +255,21 @@ export default class Game extends Phaser.Scene {
   onFlipRightDown = () => this.onFlip(false, true)
   onFlipRightUp = () => this.onFlip(false, false)
 
+  onTilt = (direction: string) => {
+    this.matter.applyForceFromAngle(
+      this.ball!,
+      0.01,
+      direction === 'up'
+        ? Phaser.Math.DegToRad(-90)
+        : direction === 'left'
+        ? Phaser.Math.DegToRad(180)
+        : direction === 'right'
+        ? Phaser.Math.DegToRad(0)
+        : Phaser.Math.DegToRad(90),
+    )
+  }
+
   onShoot = () => {
-    this.matter.applyForceFromAngle(this.ball!, 0.12, Phaser.Math.DegToRad(-90))
+    this.matter.applyForceFromAngle(this.ball!, 0.1, Phaser.Math.DegToRad(-90))
   }
 }
