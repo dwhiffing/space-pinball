@@ -289,6 +289,12 @@ export default class Game extends Phaser.Scene {
   }
 
   onShoot = () => {
-    this.matter.applyForceFromAngle(this.ball!, 0.1, Phaser.Math.DegToRad(-90))
+    if (!this.ball) return
+    if (this.ball.position.y > 260 && this.ball.position.x > 160)
+      this.matter.applyForceFromAngle(
+        this.ball!,
+        0.1,
+        Phaser.Math.DegToRad(-90),
+      )
   }
 }
