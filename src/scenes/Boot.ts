@@ -14,7 +14,7 @@ export default class Boot extends Phaser.Scene {
       progress.fillStyle(0xffffff, 1)
       progress.fillRect(0, +height / 2, +width * value, 60)
     })
-    this.load.bitmapFont('gem', 'assets/gem.png', 'assets/gem.xml')
+    this.load.bitmapFont('clarity', 'assets/clarity.png', 'assets/clarity.xml')
     this.load.spritesheet('ball', 'assets/ball.png', {
       frameWidth: 15,
       frameHeight: 15,

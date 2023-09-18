@@ -72,6 +72,7 @@ export default class Game extends Phaser.Scene {
   rightLever?: MatterJS.BodyType
   bumpers?: IBody[]
   ballImage?: Phaser.GameObjects.Sprite
+  message?: Phaser.GameObjects.BitmapText
   flipperImageLeft?: Phaser.GameObjects.Sprite
   flipperImageRight?: Phaser.GameObjects.Sprite
   leftTween?: { x: number }
@@ -94,6 +95,7 @@ export default class Game extends Phaser.Scene {
     this.createKick(10, 265)
     this.createKick(149, 265)
     this.createBall()
+    this.createUI()
 
     this.setupInput()
     this.matter.world.on('collisionstart', this.onCollisionStart)
@@ -113,6 +115,7 @@ export default class Game extends Phaser.Scene {
     if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
       this.matter.setVelocity(this.ball, 0, 0)
       this.matter.alignBody(this.ball, START.x, START.y, CENTER)
+      if (this.message) this.message.text = 'Ball lost'
     }
     this.ballImage.setPosition(this.ball.position.x, this.ball.position.y)
     const angle = Phaser.Math.RadToDeg(this.ball.angle) % 360
@@ -134,6 +137,17 @@ export default class Game extends Phaser.Scene {
     this.matter.alignBody(board, 96, 290, Phaser.Display.Align.BOTTOM_CENTER)
     board.friction = F / 10
     this.add.image(0, 2, 'board').setOrigin(0, 0)
+  }
+
+  createUI = () => {
+    this.add
+      .rectangle(0, 144, 160, 8, 0x081820)
+      .setScrollFactor(0)
+      .setOrigin(0, 1)
+    this.message = this.add
+      .bitmapText(1, 145, 'clarity', '', -8)
+      .setScrollFactor(0)
+      .setOrigin(0, 1)
   }
 
   createPost = () => {
