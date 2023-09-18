@@ -256,17 +256,16 @@ export default class Game extends Phaser.Scene {
   onFlipRightUp = () => this.onFlip(false, false)
 
   onTilt = (direction: string) => {
-    this.matter.applyForceFromAngle(
-      this.ball!,
-      0.01,
+    const angle =
       direction === 'up'
         ? Phaser.Math.DegToRad(-90)
         : direction === 'left'
         ? Phaser.Math.DegToRad(180)
         : direction === 'right'
         ? Phaser.Math.DegToRad(0)
-        : Phaser.Math.DegToRad(90),
-    )
+        : Phaser.Math.DegToRad(90)
+    this.matter.applyForceFromAngle(this.ball!, 0.01, angle)
+    this.cameras.main.shake(100, 0.02, true)
   }
 
   onShoot = () => {
