@@ -44,6 +44,7 @@ const BUMPER_CONF = {
   mass: 2,
   collisionFilter: { group: 3, mask: 2 },
 }
+const KICK_CONF = { label: 'kick', isSensor: true }
 
 const BUMPERS = [
   { x: 59, y: 77 },
@@ -90,6 +91,8 @@ export default class Game extends Phaser.Scene {
     this.createPost()
     this.createFlipper(false)
     this.bumpers = BUMPERS.map((b) => this.createBumper(b.x, b.y))
+    this.createKick(10, 265)
+    this.createKick(149, 265)
     this.createBall()
 
     this.setupInput()
@@ -169,6 +172,12 @@ export default class Game extends Phaser.Scene {
     return bump
   }
 
+  createKick = (x: number, y: number) => {
+    const bump = this.matter.add.circle(0, 0, 2, KICK_CONF) as IBody
+    const pointA = new Phaser.Math.Vector2(x, y)
+    this.matter.add.worldConstraint(bump, 0, 0.5, { pointA })
+  }
+
   createFlipper = (isLeft: boolean) => {
     const x = X + (isLeft ? 0 : FLIPPER_DIST)
     const y = Y
@@ -231,6 +240,16 @@ export default class Game extends Phaser.Scene {
         bodyA.label == 'ball' && bodyB.label == 'bumper' ? bodyB : bodyA
       bumper.sprite.setFrame(1)
       this.time.delayedCall(150, () => bumper.sprite.setFrame(0))
+    } else if (
+      (bodyA.label == 'ball' && bodyB.label == 'kick') ||
+      (bodyB.label == 'ball' && bodyA.label == 'kick')
+    ) {
+      const kick =
+        bodyA.label == 'ball' && bodyB.label == 'kick' ? bodyB : bodyA
+      const a = kick.position.x < 80 ? -90 : -95
+      this.time.delayedCall(500, () =>
+        this.matter.applyForceFromAngle(this.ball!, 0.08, a),
+      )
     }
   }
 
