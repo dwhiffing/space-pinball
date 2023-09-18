@@ -142,15 +142,20 @@ export default class Game extends Phaser.Scene {
   createSlingshot = (isLeft: boolean) => {
     const bounceSVG = this.cache.xml.get('bounce')
     const slingBase = this.matter.add.fromSVG(0, 0, bounceSVG, 1, BOARD_CONF)
-    const sling = this.matter.add.rectangle(0, 0, 3, 30, {
+    const sling = this.matter.add.rectangle(0, 0, 3, 25, {
       isStatic: true,
-      angle: isLeft ? -0.48 : 0.48,
-    })
+      angle: isLeft ? -0.48 : 0.44,
+    }) as IBody
+
+    sling.sprite = this.add
+      .sprite(isLeft ? 35 : 125, 224, 'sling')
+      .setFlipX(!isLeft)
+      .setOrigin(isLeft ? 0 : 1, 0.5)
 
     if (!isLeft) this.matter.body.scale(slingBase, -1, 1)
     const a = Phaser.Display.Align.BOTTOM_CENTER
     this.matter.alignBody(slingBase, isLeft ? 43 : 121, 240, a)
-    this.matter.alignBody(sling, isLeft ? 46 : 114, 240, a)
+    this.matter.alignBody(sling, isLeft ? 44 : 115, 235, a)
     sling.label = 'sling'
     slingBase.friction = F
   }
@@ -213,6 +218,8 @@ export default class Game extends Phaser.Scene {
         sling.position.x < 80
           ? Phaser.Math.DegToRad(-45)
           : Phaser.Math.DegToRad(215)
+      sling.sprite.setFrame(1)
+      this.time.delayedCall(150, () => sling.sprite.setFrame(0))
       this.time.delayedCall(10, () =>
         this.matter.applyForceFromAngle(this.ball!, 0.035, angle),
       )
