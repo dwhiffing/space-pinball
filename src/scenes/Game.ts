@@ -4,20 +4,18 @@ import Phaser from 'phaser'
 // #88c070
 // #e0f8d0
 
-const X = 51
+const X = 53
 const Y = 260
 const LEVER = 32
 const WIDTH = -8
 const D = 58
-const FLIPPER_DIST = 57
-const FLIP_DURATION = 58
-const MINL = Phaser.Math.DegToRad(210)
-const MAXL = Phaser.Math.DegToRad(210 - D)
-const MINR = Phaser.Math.DegToRad(330)
-const MAXR = Phaser.Math.DegToRad(330 + D)
-// const START = { x: 80, y: 28 }
-// const START = { x: 110, y: 200 }
-const START = { x: 160, y: 240 }
+const FLIPPER_DIST = 54
+const FLIP_DURATION = 54
+const DegToRad = Phaser.Math.DegToRad
+const MINL = DegToRad(210)
+const MAXL = DegToRad(210 - D)
+const MINR = DegToRad(330)
+const MAXR = DegToRad(330 + D)
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.0075
@@ -49,7 +47,7 @@ const KICK_CONF = { label: 'kick', isSensor: true }
 const BUMPERS = [
   { x: 59, y: 77 },
   { x: 93, y: 72 },
-  { x: 80, y: 105 },
+  { x: 75, y: 105 },
 ]
 
 const BALL_CONF = {
@@ -137,6 +135,7 @@ export default class Game extends Phaser.Scene {
     this.matter.alignBody(board, 96, 290, Phaser.Display.Align.BOTTOM_CENTER)
     board.friction = F / 10
     this.add.image(0, 2, 'board').setOrigin(0, 0)
+    board.parts.forEach((p) => (p.label = 'board'))
   }
 
   createUI = () => {
@@ -151,9 +150,12 @@ export default class Game extends Phaser.Scene {
   }
 
   createPost = () => {
-    this.matter.add.rectangle(54, 58, 2, 4, { isStatic: true })
-    this.matter.add.rectangle(71, 51, 2, 4, { isStatic: true })
-    this.matter.add.rectangle(89, 48, 2, 4, { isStatic: true })
+    const posts = [
+      this.matter.add.rectangle(54, 58, 2, 4, { isStatic: true }),
+      this.matter.add.rectangle(71, 51, 2, 4, { isStatic: true }),
+      this.matter.add.rectangle(89, 48, 2, 4, { isStatic: true }),
+    ]
+    posts.forEach((p) => (p.label = 'post'))
   }
 
   createSlingshot = (isLeft: boolean) => {
@@ -174,6 +176,7 @@ export default class Game extends Phaser.Scene {
     this.matter.alignBody(slingBase, isLeft ? 43 : 121, 240, a)
     this.matter.alignBody(sling, isLeft ? 44 : 115, 235, a)
     sling.label = 'sling'
+    slingBase.label = 'board'
     slingBase.friction = F
   }
 
@@ -210,6 +213,7 @@ export default class Game extends Phaser.Scene {
     const _x = x - Math.cos(v) * LEVER
     const _y = y - Math.sin(v) * LEVER
     const lever = this.matter.add.rectangle(_x, _y, 1, 1, LEVER_CONF)
+    lever.label = 'lever'
     if (isLeft) {
       this.leftLever = lever
       this.flipperImageLeft = this.add
@@ -230,40 +234,50 @@ export default class Game extends Phaser.Scene {
   }
 
   onCollisionStart = (event: any, bodyA: IBody, bodyB: IBody) => {
-    if (
-      (bodyA.label == 'ball' && bodyB.label == 'sling') ||
-      (bodyB.label == 'ball' && bodyA.label == 'sling')
-    ) {
-      const sling =
-        bodyA.label == 'ball' && bodyB.label == 'sling' ? bodyB : bodyA
-
-      const angle =
-        sling.position.x < 80
-          ? Phaser.Math.DegToRad(-45)
-          : Phaser.Math.DegToRad(215)
-      sling.sprite.setFrame(1)
-      this.time.delayedCall(150, () => sling.sprite.setFrame(0))
+    const checkBodies = (a: string, b: string) =>
+      (bodyA.label == a && bodyB.label == b) ||
+      (bodyB.label == a && bodyA.label == b)
+    const ball = bodyA.label == 'ball' ? bodyA : bodyB
+    const other = ball === bodyA ? bodyB : bodyA
+    if (!ball) return
+    if (checkBodies('ball', 'sling')) {
+      const angle = other.position.x < 80 ? DegToRad(-45) : DegToRad(215)
+      other.sprite.setFrame(1)
+      this.time.delayedCall(150, () => other.sprite.setFrame(0))
       this.time.delayedCall(10, () =>
         this.matter.applyForceFromAngle(this.ball!, 0.035, angle),
       )
+
+      this.sound.play('sling', { volume: 0.2 })
     } else if (
-      (bodyA.label == 'ball' && bodyB.label == 'bumper') ||
-      (bodyB.label == 'ball' && bodyA.label == 'bumper')
+      checkBodies('ball', 'flipper') ||
+      checkBodies('ball', 'post') ||
+      checkBodies('ball', 'board')
     ) {
-      const bumper =
-        bodyA.label == 'ball' && bodyB.label == 'bumper' ? bodyB : bodyA
-      bumper.sprite.setFrame(1)
-      this.time.delayedCall(150, () => bumper.sprite.setFrame(0))
-    } else if (
-      (bodyA.label == 'ball' && bodyB.label == 'kick') ||
-      (bodyB.label == 'ball' && bodyA.label == 'kick')
-    ) {
-      const kick =
-        bodyA.label == 'ball' && bodyB.label == 'kick' ? bodyB : bodyA
-      const a = kick.position.x < 80 ? -90 : -95
+      const last = this.data.get('lastdingtime')
+      if (ball.speed > 1.75 && (!last || Math.abs(last - this.time.now) > 90)) {
+        this.data.set('lastdingtime', this.time.now)
+        const volume = Math.min(ball.speed / 160, 3)
+        this.sound.play('ding', { volume, rate: 2 })
+      }
+    } else if (checkBodies('ball', 'bumper')) {
+      const last = this.data.get('lastbumpertime')
+      if (ball.speed > 0.5 && (!last || Math.abs(last - this.time.now) > 10)) {
+        this.data.set('lastbumpertime', this.time.now)
+        this.sound.play('bumper', { volume: 0.2 })
+      }
+
+      other.sprite.setFrame(1)
+      this.time.delayedCall(150, () => other.sprite.setFrame(0))
+    } else if (checkBodies('ball', 'kick')) {
+      const a = other.position.x < 80 ? -90 : -95
       this.time.delayedCall(500, () =>
         this.matter.applyForceFromAngle(this.ball!, 0.08, a),
       )
+    } else if (checkBodies('ball', 'lever')) {
+      //
+    } else {
+      console.log(bodyA.label, bodyB.label)
     }
   }
 
@@ -278,6 +292,7 @@ export default class Game extends Phaser.Scene {
       .on('down', this.onFlipRightDown)
       .on('up', this.onFlipRightUp)
 
+    this.input.keyboard.addKey('down').on('down', this.onShootStart)
     this.input.keyboard.addKey('down').on('up', this.onShoot)
     this.input.keyboard.addKey('space').on('down', () => this.onTilt('up'))
     this.input.keyboard.addKey('left').on('down', () => this.onTilt('left'))
@@ -285,6 +300,7 @@ export default class Game extends Phaser.Scene {
   }
 
   onFlip = (isLeft?: boolean, isDown?: boolean) => {
+    if (isDown) this.sound.play('flipper', { volume: 0.1, rate: 0.5 })
     const target = isLeft ? this.leftTween : this.rightTween
     const max = isLeft ? MAXL : MAXR
     const min = isLeft ? MINL : MINR
@@ -294,7 +310,13 @@ export default class Game extends Phaser.Scene {
       duration: FLIP_DURATION,
       onUpdate: (a, b, c) => {
         const v =
-          a.totalProgress < 0.3 ? 0 : a.totalProgress < 0.6 ? 1 : isDown ? 2 : 0
+          a.totalProgress <= 0.33333
+            ? 0
+            : a.totalProgress <= 0.6666
+            ? 1
+            : isDown
+            ? 2
+            : 0
         if (isLeft) {
           this.flipperImageLeft?.setFrame(v)
         } else {
@@ -318,23 +340,31 @@ export default class Game extends Phaser.Scene {
   onTilt = (direction: string) => {
     const angle =
       direction === 'up'
-        ? Phaser.Math.DegToRad(-90)
+        ? DegToRad(-90)
         : direction === 'left'
-        ? Phaser.Math.DegToRad(180)
+        ? DegToRad(180)
         : direction === 'right'
-        ? Phaser.Math.DegToRad(0)
-        : Phaser.Math.DegToRad(90)
+        ? DegToRad(0)
+        : DegToRad(90)
     this.matter.applyForceFromAngle(this.ball!, 0.01, angle)
     this.cameras.main.shake(100, 0.02, true)
   }
 
+  onShootStart = () => {
+    if (!this.ball) return
+
+    this.sound.play('click', { volume: 0.5 })
+    this.data.set('plungestart', this.time.now)
+  }
+
   onShoot = () => {
     if (!this.ball) return
+
+    const value = Math.min(this.time.now - this.data.get('plungestart'), 2500)
+    const force = value / 25000
+    if (force > 0.06) this.cameras.main.shake(100, force / 5, true)
+    this.sound.play('plunger', { volume: force * 5 })
     if (this.ball.position.y > 260 && this.ball.position.x > 160)
-      this.matter.applyForceFromAngle(
-        this.ball!,
-        0.1,
-        Phaser.Math.DegToRad(-90),
-      )
+      this.matter.applyForceFromAngle(this.ball!, force, DegToRad(-90))
   }
 }

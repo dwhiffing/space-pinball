@@ -14,6 +14,14 @@ export default class Boot extends Phaser.Scene {
       progress.fillStyle(0xffffff, 1)
       progress.fillRect(0, +height / 2, +width * value, 60)
     })
+    this.load.audio('click', 'assets/click.mp3')
+    this.load.audio('ding', 'assets/ding.mp3')
+    this.load.audio('plunger', 'assets/plunger.mp3')
+    this.load.audio('sling', 'assets/sling.mp3')
+    this.load.audio('sling', 'assets/sling.mp3')
+    this.load.audio('plunger', 'assets/plunger.mp3')
+    this.load.audio('bumper', 'assets/bumper.mp3')
+    this.load.audio('flipper', 'assets/flipper.mp3')
     this.load.bitmapFont('clarity', 'assets/clarity.png', 'assets/clarity.xml')
     this.load.spritesheet('ball', 'assets/ball.png', {
       frameWidth: 15,
