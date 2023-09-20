@@ -109,12 +109,13 @@ export default class Game extends Phaser.Scene {
     if (this.ball.position.x > this.cameras.main.width) {
       x = this.cameras.main.width / 2 + 32
     }
+    // TODO: only pan if x/y changed
     this.cameras.main.pan(x, y, 120, undefined, true)
+
     if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
-      this.matter.setVelocity(this.ball, 0, 0)
-      this.matter.alignBody(this.ball, START.x, START.y, CENTER)
-      if (this.message) this.message.text = 'Ball lost'
+      this.onBallLost()
     }
+
     this.ballImage.setPosition(this.ball.position.x, this.ball.position.y)
     const angle = Phaser.Math.RadToDeg(this.ball.angle) % 360
     const frame = Math.floor((angle < 0 ? angle + 360 : angle) / 22.5)
@@ -279,6 +280,22 @@ export default class Game extends Phaser.Scene {
     } else {
       console.log(bodyA.label, bodyB.label)
     }
+  }
+
+  onBallLost = () => {
+    const isBallLost = this.data.get('ball-lost')
+    if (!this.ball || isBallLost) return
+
+    this.sound.play('ball-lost', { volume: 0.35, rate: 0.9 })
+    this.data.set('ball-lost', true)
+    this.time.delayedCall(1500, () => {
+      this.data.set('ball-lost', false)
+      this.matter.setVelocity(this.ball!, 0, 0)
+      this.matter.alignBody(this.ball!, START.x, START.y, CENTER)
+      // this.delayedFlip()
+    })
+
+    if (this.message) this.message.text = 'Ball lost'
   }
 
   setupInput = () => {
