@@ -258,7 +258,7 @@ export default class Game extends Phaser.Scene {
     }
     const flipperSVG = this.cache.xml.get('flipper')
     const flipper = this.matter.add.fromSVG(0, 0, flipperSVG, 1, FLIPPER_CONF)
-    this.matter.add.worldConstraint(flipper, 0, 0.15, {
+    this.matter.add.worldConstraint(flipper, 0, 0.1, {
       pointA: new Phaser.Math.Vector2(x, y),
       pointB: new Phaser.Math.Vector2(WIDTH, 0),
     })
