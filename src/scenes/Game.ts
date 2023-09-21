@@ -95,8 +95,6 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    this.matter.config.positionIterations = 40
-
     this.createBoard()
     this.createRefuelBoard()
     this.createSlingshot(true)
@@ -150,9 +148,7 @@ export default class Game extends Phaser.Scene {
     if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
       if (this.ball.position.x < 0) {
         this.time.delayedCall(1500, () => {
-          const { x, y } = REFUEL_WARP
-          this.matter.setVelocity(this.ball!, 0, 0)
-          this.matter.alignBody(this.ball!, x, y, CENTER)
+          this.warpBall(REFUEL_WARP)
         })
       } else {
         this.onBallLost()
@@ -342,12 +338,15 @@ export default class Game extends Phaser.Scene {
     this.data.set('ball-lost', true)
     this.time.delayedCall(DEBUG ? 1 : 1500, () => {
       this.data.set('ball-lost', false)
-      this.matter.setVelocity(this.ball!, 0, 0)
-      this.matter.alignBody(this.ball!, START.x, START.y, CENTER)
-      // if (DEBUG) this.delayedFlip()
+      this.warpBall(START)
     })
 
     if (this.message) this.message.text = 'Ball lost'
+  }
+
+  warpBall = ({ x, y }: { x: number; y: number }) => {
+    this.matter.setVelocity(this.ball!, 0, 0)
+    this.matter.alignBody(this.ball!, x, y, CENTER)
   }
 
   setupInput = () => {
