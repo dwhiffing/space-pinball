@@ -9,7 +9,7 @@ export default {
     default: 'matter',
     matter: {
       debug: PHYSICS_DEBUG,
-      gravity: { y: 0.5 },
+      gravity: { y: 0.44 },
     },
   },
   pixelArt: true,
