@@ -4,7 +4,7 @@
   "description": "gbjam23",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 9191",
     "build": "vite build",
     "serve": "vite preview",
     "deploy": "gh-pages -d dist"
