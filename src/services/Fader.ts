@@ -30,11 +30,20 @@ export class Fader {
         ? Phaser.Math.Easing.Quadratic.InOut
         : Phaser.Math.Easing.Quintic.Out,
       duration,
+      onComplete: () => {
+        this.update()
+        this.inverted = !this.inverted
+        this.active = this.inverted
+        this.num = 0
+        this.scene.time.delayedCall(20, () => {
+          if (!this.inverted) this.graphics.clear()
+        })
+      },
     })
   }
 
   update() {
-    if (!this.active && !this.inverted) return
+    if (!this.active) return
     const num = Math.floor(this.num)
 
     this.graphics.clear()

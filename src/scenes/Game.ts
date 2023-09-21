@@ -26,10 +26,10 @@ const RIGHT_FLIPPER = { x: 111, y: 243 }
 // const START = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
 // const REFUEL_BOARD = { x: -100, y: 144 }
-// const REFUEL_ZONE = { x: -100, y: 148 }
-// const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
-const MAIN_CHUTE = { x: 160, y: 240 }
 const REFUEL_WARP = { x: 52, y: 145 }
+const REFUEL_ZONE = { x: -100, y: 148 }
+const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
+const MAIN_CHUTE = { x: 160, y: 240 }
 const AUTOFLIP_TARGET = 0
 const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
@@ -114,12 +114,11 @@ export default class Game extends Phaser.Scene {
     if (DEBUG_AUTO_FLIP) {
       this.time.delayedCall(1, () => this.autoFlip())
     }
-    if (DEBUG) {
-      // this.time.delayedCall(1, this.delayedFlip)
-    } else {
-      this.fader = new Fader(this, true)
-      this.time.delayedCall(250, () => this.fader?.fade(1500))
-    }
+    this.fader = new Fader(this, true)
+    this.time.delayedCall(5, () => {
+      this.fader?.fade(DEBUG ? 50 : 1500)
+    })
+    this.data.set('allowcamerapan', true)
 
     this.matter.world.on('collisionstart', this.onCollisionStart)
 
@@ -163,23 +162,35 @@ export default class Game extends Phaser.Scene {
     })
   }
 
-  update() {
-    this.fader?.update()
-    if (!this.ballImage || !this.ball) return
+  getCameraPosition = () => {
     let y = this.cameras.main.height * 1.5
     let x = this.cameras.main.width / 2
-    if (this.ball.position.x < 0) {
+    if (this.ball!.position.x < 0) {
       x = -100
     } else {
-      if (this.ball.position.y < this.cameras.main.height) {
+      if (this.ball!.position.y < this.cameras.main.height) {
         y = this.cameras.main.height / 2
       }
-      if (this.ball.position.x > this.cameras.main.width) {
+      if (this.ball!.position.x > this.cameras.main.width) {
         x = this.cameras.main.width / 2 + 32
       }
     }
-    // TODO: only pan if x/y changed
-    this.cameras.main.pan(x, y, 120, undefined, true)
+    return { x, y }
+  }
+
+  update() {
+    this.fader?.update()
+    if (!this.ballImage || !this.ball) return
+    const cameraPos = this.getCameraPosition()
+    const allowPan = this.data.get('allowcamerapan')
+
+    if (
+      allowPan &&
+      (this.cameras.main.x !== cameraPos.x ||
+        this.cameras.main.y !== cameraPos.y)
+    ) {
+      this.cameras.main.pan(cameraPos.x, cameraPos.y, 120, undefined, true)
+    }
 
     const shouldFlipAt = this.data.get('shouldflipat')
     const direction = this.ball!.position.x < 80 ? 0 : 1
@@ -195,11 +206,12 @@ export default class Game extends Phaser.Scene {
       this.time.delayedCall(500, () => this.onFlip(direction === 0, false))
     }
 
-    if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
+    if (
+      !this.data.get('ball-lost') &&
+      this.ball.position.y > this.cameras.main.height * 2 + 40
+    ) {
       if (this.ball.position.x < 0) {
-        this.time.delayedCall(1500, () => {
-          this.warpBall(REFUEL_WARP)
-        })
+        this.onDrainRefuel()
       } else {
         this.onBallLost()
       }
@@ -216,7 +228,8 @@ export default class Game extends Phaser.Scene {
 
   createBall = () => {
     this.ballImage = this.add.sprite(0, 0, 'ball')
-    this.ball = this.matter.add.circle(START.x, START.y, 6.5, BALL_CONF)
+    this.ball = this.matter.add.circle(0, 0, 6.5, BALL_CONF)
+    this.warpBall(START)
   }
 
   createBoard = () => {
@@ -226,12 +239,18 @@ export default class Game extends Phaser.Scene {
     board.friction = F / 10
     this.add.image(0, 2, 'board').setOrigin(0, 0)
     board.parts.forEach((p) => (p.label = 'board'))
+
+    const refuelWarp = this.matter.add.circle(42, 125, 5, {
+      isSensor: true,
+      isStatic: true,
+    })
+    refuelWarp.label = 'refuel-warp'
   }
 
   createRefuelBoard = () => {
     const boardSVG = this.cache.xml.get('refuel-board')
     const board = this.matter.add.fromSVG(0, 0, boardSVG, 1, BOARD_CONF)
-    this.matter.alignBody(board, -200, 290, Phaser.Display.Align.BOTTOM_CENTER)
+    this.matter.alignBody(board, -100, 288, Phaser.Display.Align.BOTTOM_CENTER)
     board.friction = F / 10
     this.add.image(-180, 144, 'refuel-board').setOrigin(0, 0)
     board.parts.forEach((p) => (p.label = 'board'))
@@ -373,6 +392,8 @@ export default class Game extends Phaser.Scene {
       this.time.delayedCall(500, () =>
         this.matter.applyForceFromAngle(this.ball!, 0.08, a),
       )
+    } else if (checkBodies('ball', 'refuel-warp')) {
+      this.warpBall(REFUEL_ZONE, true)
     } else if (checkBodies('ball', 'lever')) {
       //
     } else {
@@ -395,9 +416,43 @@ export default class Game extends Phaser.Scene {
     if (this.message) this.message.text = 'Ball lost'
   }
 
-  warpBall = ({ x, y }: { x: number; y: number }) => {
-    this.matter.setVelocity(this.ball!, 0, 0)
-    this.matter.alignBody(this.ball!, x, y, CENTER)
+  onDrainRefuel = () => {
+    this.data.set('ball-lost', true)
+    this.warpBall(REFUEL_WARP, true, () => {
+      this.data.set('ball-lost', false)
+    })
+  }
+
+  warpBall = (
+    { x, y }: { x: number; y: number },
+    forceCamera = false,
+    onComplete?: () => void,
+  ) => {
+    if (forceCamera) {
+      const t = 1500
+      this.ball!.gravityScale.y = 0
+      this.fader?.fade(t)
+      this.matter.setAngularVelocity(this.ball!, 0)
+      this.time.delayedCall(t, () => {
+        this.matter.setVelocity(this.ball!, 0, 0)
+        this.matter.alignBody(this.ball!, x, y, CENTER)
+        const cp = this.getCameraPosition()
+        this.data.set('allowcamerapan', false)
+        this.cameras.main.pan(cp.x, cp.y, 10, undefined, true, (c, p) => {
+          if (p >= 1) this.data.set('allowcamerapan', true)
+        })
+      })
+      this.time.delayedCall(t + 50, () => {
+        this.fader?.fade(t)
+        this.time.delayedCall(t + 500, () => {
+          onComplete?.()
+          this.ball!.gravityScale.y = 1
+        })
+      })
+    } else {
+      this.matter.setVelocity(this.ball!, 0, 0)
+      this.matter.alignBody(this.ball!, x, y, CENTER)
+    }
   }
 
   setupInput = () => {
