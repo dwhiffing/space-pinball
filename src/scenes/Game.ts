@@ -124,7 +124,7 @@ export default class Game extends Phaser.Scene {
     this.matter.world.on('collisionstart', this.onCollisionStart)
 
     const limitMaxSpeed = () => {
-      let maxSpeed = 7
+      let maxSpeed = 11
       const body = this.ball!
       if (body.velocity.x > maxSpeed) {
         this.matter.setVelocity(body, maxSpeed, body.velocity.y)
@@ -479,8 +479,9 @@ export default class Game extends Phaser.Scene {
   onShoot = () => {
     if (!this.ball) return
 
-    const value = Math.min(this.time.now - this.data.get('plungestart'), 2500)
-    const force = value / 25000
+    const MAX = DEBUG ? 500 : 2000
+    const value = Math.min(this.time.now - this.data.get('plungestart'), MAX)
+    const force = value / (MAX * 10)
     if (force > 0.06) this.cameras.main.shake(100, force / 5, true)
     this.sound.play('plunger', { volume: force * 5 })
     if (this.ball.position.y > 260 && this.ball.position.x > 160)
