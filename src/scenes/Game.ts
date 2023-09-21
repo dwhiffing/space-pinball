@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { DEBUG } from '../constants'
+import { DEBUG, DEBUG_AUTO_FLIP } from '../constants'
 import { Fader } from '../services/Fader'
 // #081820
 // #346856
@@ -26,8 +26,11 @@ const RIGHT_FLIPPER = { x: 111, y: 243 }
 // const START = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
 // const REFUEL_BOARD = { x: -100, y: 144 }
+// const REFUEL_ZONE = { x: -100, y: 148 }
+// const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
-const REFUEL_WARP = { x: 45, y: 148 }
+const REFUEL_WARP = { x: 52, y: 145 }
+const AUTOFLIP_TARGET = 0
 const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
@@ -108,6 +111,9 @@ export default class Game extends Phaser.Scene {
     this.createBall()
     this.createUI()
     this.setupInput()
+    if (DEBUG_AUTO_FLIP) {
+      this.time.delayedCall(1, () => this.autoFlip())
+    }
     if (DEBUG) {
       // this.time.delayedCall(1, this.delayedFlip)
     } else {
@@ -137,10 +143,24 @@ export default class Game extends Phaser.Scene {
       }
     }
     this.matter.world.on('beforeupdate', limitMaxSpeed)
+  }
+
+  autoFlip = (_target = AUTOFLIP_TARGET) => {
+    const direction = this.ball!.position.x < 80 ? 0 : 1
+    this.time.delayedCall(50, () => this.onFlip(direction === 0, true))
+    const REFUEL = direction === 0 ? 68 : 94.5
+    const ORBIT = direction === 0 ? 70.5 : 91
+    const CENTER = direction === 0 ? 69 : 98
+    const SIDE = direction === 0 ? 71 : 90.5
+    let target = REFUEL
+    if (_target === 1) target = ORBIT
+    if (_target === 2) target = CENTER
+    if (_target === 3) target = SIDE
     this.time.delayedCall(500, () => this.matter.setVelocity(this.ball!, 0, 0))
-    this.time.delayedCall(1500, this.onFlipRightUp)
-    this.time.delayedCall(2150, this.onFlipRightDown)
-    this.time.delayedCall(2500, this.onFlipRightUp)
+    this.time.delayedCall(1500, () => {
+      this.data.set('shouldflipat', target)
+      this.onFlip(direction === 0, false)
+    })
   }
 
   update() {
@@ -160,6 +180,20 @@ export default class Game extends Phaser.Scene {
     }
     // TODO: only pan if x/y changed
     this.cameras.main.pan(x, y, 120, undefined, true)
+
+    const shouldFlipAt = this.data.get('shouldflipat')
+    const direction = this.ball!.position.x < 80 ? 0 : 1
+
+    if (
+      shouldFlipAt &&
+      (direction === 0
+        ? this.ball.position.x >= shouldFlipAt
+        : this.ball.position.x <= shouldFlipAt)
+    ) {
+      this.data.set('shouldflipat', 0)
+      this.onFlip(direction === 0, true)
+      this.time.delayedCall(500, () => this.onFlip(direction === 0, false))
+    }
 
     if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
       if (this.ball.position.x < 0) {
@@ -355,6 +389,7 @@ export default class Game extends Phaser.Scene {
     this.time.delayedCall(DEBUG ? 1 : 1500, () => {
       this.data.set('ball-lost', false)
       this.warpBall(START)
+      if (DEBUG_AUTO_FLIP) this.autoFlip()
     })
 
     if (this.message) this.message.text = 'Ball lost'
