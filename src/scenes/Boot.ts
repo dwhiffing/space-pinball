@@ -18,6 +18,7 @@ export default class Boot extends Phaser.Scene {
     this.load.audio('ding', 'assets/ding.mp3')
     this.load.audio('plunger', 'assets/plunger.mp3')
     this.load.audio('sling', 'assets/sling.mp3')
+    this.load.audio('menu', 'assets/menu.mp3')
     this.load.audio('sling', 'assets/sling.mp3')
     this.load.audio('plunger', 'assets/plunger.mp3')
     this.load.audio('bumper', 'assets/bumper.mp3')
@@ -37,6 +38,7 @@ export default class Boot extends Phaser.Scene {
       frameHeight: 18,
     })
     this.load.image('board', 'assets/board.png')
+    this.load.image('menu', 'assets/menu.png')
     this.load.spritesheet('flipper', 'assets/flipper.png', {
       frameWidth: 24,
       frameHeight: 23,
@@ -48,8 +50,8 @@ export default class Boot extends Phaser.Scene {
     this.load.on('complete', () => {
       progress.destroy()
 
-      // this.scene.start('MenuScene')
-      this.scene.start('GameScene')
+      this.scene.start('MenuScene')
+      // this.scene.start('GameScene')
     })
   }
 

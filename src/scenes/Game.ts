@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { Fader } from '../services/Fader'
 // #081820
 // #346856
 // #88c070
@@ -16,6 +17,14 @@ const MINL = DegToRad(210)
 const MAXL = DegToRad(210 - D)
 const MINR = DegToRad(330)
 const MAXR = DegToRad(330 + D)
+// const START = { x: 80, y: 28 } // top bumpers
+// const START = { x: 150, y: 200 } // right chute
+// const START = { x: 20, y: 200 } // left chute
+// const START = { x: 98, y: 200 } // right flipper
+// const START = { x: 45, y: 240 } // left flipper
+// const START = { x: 45, y: 200 } // left sling
+// const START = { x: 98, y: 200 } // right sling
+const START = { x: 160, y: 240 } // main chute
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.0075
@@ -69,6 +78,7 @@ export default class Game extends Phaser.Scene {
   leftLever?: MatterJS.BodyType
   rightLever?: MatterJS.BodyType
   bumpers?: IBody[]
+  fader?: Fader
   ballImage?: Phaser.GameObjects.Sprite
   message?: Phaser.GameObjects.BitmapText
   flipperImageLeft?: Phaser.GameObjects.Sprite
@@ -94,12 +104,25 @@ export default class Game extends Phaser.Scene {
     this.createKick(149, 265)
     this.createBall()
     this.createUI()
-
     this.setupInput()
+    // this.time.delayedCall(1, this.delayedFlip)
+    this.fader = new Fader(this, true)
+    this.time.delayedCall(250, () => {
+      this.fader?.fade(1500)
+    })
+
     this.matter.world.on('collisionstart', this.onCollisionStart)
   }
 
+  delayedFlip = () => {
+    this.time.delayedCall(50, this.onFlipLeftDown)
+    this.time.delayedCall(1500, this.onFlipLeftUp)
+    this.time.delayedCall(2050, this.onFlipLeftDown)
+    this.time.delayedCall(2500, this.onFlipLeftUp)
+  }
+
   update() {
+    this.fader?.update()
     if (!this.ballImage || !this.ball) return
     let y = this.cameras.main.height * 1.5
     let x = this.cameras.main.width / 2
