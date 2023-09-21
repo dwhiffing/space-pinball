@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { DEBUG } from '../constants'
 import { Fader } from '../services/Fader'
 // #081820
 // #346856
@@ -20,11 +21,14 @@ const MAXR = DegToRad(330 + D)
 // const START = { x: 80, y: 28 } // top bumpers
 // const START = { x: 150, y: 200 } // right chute
 // const START = { x: 20, y: 200 } // left chute
-// const START = { x: 98, y: 200 } // right flipper
-// const START = { x: 45, y: 240 } // left flipper
+// const LEFT_FLIPPER = { x: 45, y: 240 }
+const RIGHT_FLIPPER = { x: 111, y: 243 }
 // const START = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
-const START = { x: 160, y: 240 } // main chute
+// const REFUEL_BOARD = { x: -100, y: 144 }
+const MAIN_CHUTE = { x: 160, y: 240 }
+const REFUEL_WARP = { x: 45, y: 148 }
+const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.0075
@@ -94,6 +98,7 @@ export default class Game extends Phaser.Scene {
     this.matter.config.positionIterations = 40
 
     this.createBoard()
+    this.createRefuelBoard()
     this.createSlingshot(true)
     this.createFlipper(true)
     this.createSlingshot(false)
@@ -105,20 +110,23 @@ export default class Game extends Phaser.Scene {
     this.createBall()
     this.createUI()
     this.setupInput()
-    // this.time.delayedCall(1, this.delayedFlip)
-    this.fader = new Fader(this, true)
-    this.time.delayedCall(250, () => {
-      this.fader?.fade(1500)
-    })
+    if (DEBUG) {
+      // this.time.delayedCall(1, this.delayedFlip)
+    } else {
+      this.fader = new Fader(this, true)
+      this.time.delayedCall(250, () => this.fader?.fade(1500))
+    }
 
     this.matter.world.on('collisionstart', this.onCollisionStart)
   }
 
   delayedFlip = () => {
-    this.time.delayedCall(50, this.onFlipLeftDown)
-    this.time.delayedCall(1500, this.onFlipLeftUp)
-    this.time.delayedCall(2050, this.onFlipLeftDown)
-    this.time.delayedCall(2500, this.onFlipLeftUp)
+    this.time.delayedCall(50, this.onFlipRightDown)
+
+    this.time.delayedCall(500, () => this.matter.setVelocity(this.ball!, 0, 0))
+    this.time.delayedCall(1500, this.onFlipRightUp)
+    this.time.delayedCall(2150, this.onFlipRightDown)
+    this.time.delayedCall(2500, this.onFlipRightUp)
   }
 
   update() {
@@ -126,17 +134,29 @@ export default class Game extends Phaser.Scene {
     if (!this.ballImage || !this.ball) return
     let y = this.cameras.main.height * 1.5
     let x = this.cameras.main.width / 2
-    if (this.ball.position.y < this.cameras.main.height) {
-      y = this.cameras.main.height / 2
-    }
-    if (this.ball.position.x > this.cameras.main.width) {
-      x = this.cameras.main.width / 2 + 32
+    if (this.ball.position.x < 0) {
+      x = -100
+    } else {
+      if (this.ball.position.y < this.cameras.main.height) {
+        y = this.cameras.main.height / 2
+      }
+      if (this.ball.position.x > this.cameras.main.width) {
+        x = this.cameras.main.width / 2 + 32
+      }
     }
     // TODO: only pan if x/y changed
     this.cameras.main.pan(x, y, 120, undefined, true)
 
     if (this.ball.position.y > this.cameras.main.height * 2 + 40) {
-      this.onBallLost()
+      if (this.ball.position.x < 0) {
+        this.time.delayedCall(1500, () => {
+          const { x, y } = REFUEL_WARP
+          this.matter.setVelocity(this.ball!, 0, 0)
+          this.matter.alignBody(this.ball!, x, y, CENTER)
+        })
+      } else {
+        this.onBallLost()
+      }
     }
 
     this.ballImage.setPosition(this.ball.position.x, this.ball.position.y)
@@ -159,6 +179,15 @@ export default class Game extends Phaser.Scene {
     this.matter.alignBody(board, 96, 290, Phaser.Display.Align.BOTTOM_CENTER)
     board.friction = F / 10
     this.add.image(0, 2, 'board').setOrigin(0, 0)
+    board.parts.forEach((p) => (p.label = 'board'))
+  }
+
+  createRefuelBoard = () => {
+    const boardSVG = this.cache.xml.get('refuel-board')
+    const board = this.matter.add.fromSVG(0, 0, boardSVG, 1, BOARD_CONF)
+    this.matter.alignBody(board, -200, 290, Phaser.Display.Align.BOTTOM_CENTER)
+    board.friction = F / 10
+    this.add.image(-180, 144, 'refuel-board').setOrigin(0, 0)
     board.parts.forEach((p) => (p.label = 'board'))
   }
 
@@ -311,11 +340,11 @@ export default class Game extends Phaser.Scene {
 
     this.sound.play('ball-lost', { volume: 0.35, rate: 0.9 })
     this.data.set('ball-lost', true)
-    this.time.delayedCall(1500, () => {
+    this.time.delayedCall(DEBUG ? 1 : 1500, () => {
       this.data.set('ball-lost', false)
       this.matter.setVelocity(this.ball!, 0, 0)
       this.matter.alignBody(this.ball!, START.x, START.y, CENTER)
-      // this.delayedFlip()
+      // if (DEBUG) this.delayedFlip()
     })
 
     if (this.message) this.message.text = 'Ball lost'

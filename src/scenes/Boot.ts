@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { DEBUG } from '../constants'
 
 export default class Boot extends Phaser.Scene {
   constructor() {
@@ -38,20 +39,21 @@ export default class Boot extends Phaser.Scene {
       frameHeight: 18,
     })
     this.load.image('board', 'assets/board.png')
+    this.load.image('refuel-board', 'assets/refuel-board.png')
     this.load.image('menu', 'assets/menu.png')
     this.load.spritesheet('flipper', 'assets/flipper.png', {
       frameWidth: 24,
       frameHeight: 23,
     })
     this.load.xml('board', 'assets/board.svg')
+    this.load.xml('refuel-board', 'assets/refuel-board.svg')
     this.load.xml('bounce', 'assets/bounce.svg')
     this.load.xml('flipper', 'assets/flipper.svg')
 
     this.load.on('complete', () => {
       progress.destroy()
 
-      this.scene.start('MenuScene')
-      // this.scene.start('GameScene')
+      this.scene.start(DEBUG ? 'GameScene' : 'MenuScene')
     })
   }
 
