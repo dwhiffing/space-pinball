@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { DEBUG } from './constants'
+import { PHYSICS_DEBUG } from './constants'
 
 export default {
   type: Phaser.AUTO,
@@ -7,7 +7,10 @@ export default {
   backgroundColor: '#081820',
   physics: {
     default: 'matter',
-    matter: { debug: DEBUG, gravity: { y: 0.5 } },
+    matter: {
+      debug: PHYSICS_DEBUG,
+      gravity: { y: 0.5 },
+    },
   },
   pixelArt: true,
   scale: {
