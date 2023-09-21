@@ -21,7 +21,7 @@ const MAXR = DegToRad(330 + D)
 // const START = { x: 80, y: 28 } // top bumpers
 // const START = { x: 150, y: 200 } // right chute
 // const START = { x: 20, y: 200 } // left chute
-// const LEFT_FLIPPER = { x: 45, y: 240 }
+// const LEFT_FLIPPER = { x: 45, y: 243 }
 const RIGHT_FLIPPER = { x: 111, y: 243 }
 // const START = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
@@ -116,11 +116,27 @@ export default class Game extends Phaser.Scene {
     }
 
     this.matter.world.on('collisionstart', this.onCollisionStart)
-  }
 
-  delayedFlip = () => {
-    this.time.delayedCall(50, this.onFlipRightDown)
+    const limitMaxSpeed = () => {
+      let maxSpeed = 7
+      const body = this.ball!
+      if (body.velocity.x > maxSpeed) {
+        this.matter.setVelocity(body, maxSpeed, body.velocity.y)
+      }
 
+      if (body.velocity.x < -maxSpeed) {
+        this.matter.setVelocity(body, -maxSpeed, body.velocity.y)
+      }
+
+      if (body.velocity.y > maxSpeed) {
+        this.matter.setVelocity(body, body.velocity.x, maxSpeed)
+      }
+
+      if (body.velocity.y < -maxSpeed) {
+        this.matter.setVelocity(body, body.velocity.x, -maxSpeed)
+      }
+    }
+    this.matter.world.on('beforeupdate', limitMaxSpeed)
     this.time.delayedCall(500, () => this.matter.setVelocity(this.ball!, 0, 0))
     this.time.delayedCall(1500, this.onFlipRightUp)
     this.time.delayedCall(2150, this.onFlipRightDown)
