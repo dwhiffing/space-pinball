@@ -42,6 +42,10 @@ export default class Boot extends Phaser.Scene {
       frameWidth: 6,
       frameHeight: 6,
     })
+    this.load.spritesheet('spinner', 'assets/spinner.png', {
+      frameWidth: 15,
+      frameHeight: 8,
+    })
     this.load.spritesheet('post', 'assets/post.png', {
       frameWidth: 5,
       frameHeight: 12,
