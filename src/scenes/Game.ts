@@ -268,11 +268,20 @@ export default class Game extends Phaser.Scene {
 
     this.spinners?.forEach((spinner) => {
       let speed = spinner.data.get('speed') ?? 0
+      let playedSound = spinner.data.get('playedSound') ?? false
       let frame = spinner.data.get('frame') ?? 0
       if (Math.abs(speed) > 0.1) {
         spinner.data.set('frame', (frame + speed / 10) % 5)
         spinner.data.set('speed', speed * 0.98)
-        spinner.setFrame(Math.floor(frame > 0 ? frame : 5 + frame))
+        const finalFrame = Math.floor(frame > 0 ? frame : 5 + frame)
+        if (finalFrame !== +spinner.frame.name) {
+          spinner.data.set('playedSound', false)
+          spinner.setFrame(finalFrame)
+        }
+        if (finalFrame === 0 && !playedSound) {
+          spinner.data.set('playedSound', true)
+          this.sound.play('click')
+        }
       } else if (speed > 0) {
         spinner.data.set('speed', 0)
       }
@@ -530,7 +539,7 @@ export default class Game extends Phaser.Scene {
       } else if (other.label.includes('spinner')) {
         this.spinners
           ?.find((l) => l.data.get('label') === other.label)
-          ?.data.set('speed', ball.velocity.y * 4)
+          ?.data.set('speed', ball.velocity.y * 8)
       } else {
         console.log(bodyA.label, bodyB.label)
       }
