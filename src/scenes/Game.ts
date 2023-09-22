@@ -18,7 +18,7 @@ const MINL = DegToRad(210)
 const MAXL = DegToRad(210 - D)
 const MINR = DegToRad(330)
 const MAXR = DegToRad(330 + D)
-const BUMPER_WARP = { x: 80, y: 28 }
+const BUMPER_WARP = { x: 88, y: 37 }
 // const START = { x: 150, y: 200 } // right chute
 // const START = { x: 20, y: 200 } // left chute
 const LEFT_FLIPPER = { x: 43, y: 243 }
@@ -32,7 +32,7 @@ const REFUEL_ZONE = { x: -100, y: 148 }
 const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
 const AUTOFLIP_TARGET = 3
-const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
+const START = DEBUG ? BUMPER_WARP : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.00035
@@ -248,6 +248,7 @@ export default class Game extends Phaser.Scene {
     const body = this.ball?.body as MatterJS.BodyType
     body.label = 'ball'
     this.warpBall(START)
+    // this.ball.setSensor(true)
   }
 
   createBoard = () => {
@@ -291,12 +292,16 @@ export default class Game extends Phaser.Scene {
   }
 
   createPost = () => {
+    const conf = { isStatic: true, chamfer: { radius: 3 } }
     const posts = [
-      this.matter.add.rectangle(54, 58, 2, 4, { isStatic: true }),
-      this.matter.add.rectangle(71, 51, 2, 4, { isStatic: true }),
-      this.matter.add.rectangle(89, 48, 2, 4, { isStatic: true }),
+      this.matter.add.sprite(54, 58, 'post', 0, conf),
+      this.matter.add.sprite(71, 51, 'post', 0, conf),
+      this.matter.add.sprite(89, 48, 'post', 0, conf),
     ]
-    posts.forEach((p) => (p.label = 'post'))
+    posts.forEach((p) => {
+      // @ts-ignore
+      p.body.label = 'post'
+    })
   }
 
   createSlingshot = (isLeft: boolean) => {
