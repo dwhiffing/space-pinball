@@ -32,7 +32,7 @@ const REFUEL_ZONE = { x: -100, y: 148 }
 const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
 const AUTOFLIP_TARGET = 3
-const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
+const START = DEBUG ? BUMPER_WARP : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.00035
@@ -77,8 +77,20 @@ const BALL_CONF = {
   bounce: 0.15,
 }
 
-const PASS_TOGGLES = [{ x: 80, y: 80, size: 6, label: 'test' }]
-const LIGHTS = [{ x: 80, y: 80, label: 'test' }]
+const PASS_TOGGLES = [
+  { x: 47, y: 62, size: 6, label: 'post-light-0' },
+  { x: 72, y: 50, size: 6, label: 'post-light-1' },
+  { x: 96, y: 50, size: 6, label: 'post-light-2' },
+]
+const LIGHTS = [
+  { x: 47, y: 62, label: 'post-light-0' },
+  { x: 72, y: 50, label: 'post-light-1' },
+  { x: 96, y: 50, label: 'post-light-2' },
+]
+const POSTS = [
+  { x: 59, y: 54 },
+  { x: 84, y: 48 },
+]
 
 interface IBody extends MatterJS.BodyType {
   sprite: Phaser.GameObjects.Sprite
@@ -87,6 +99,7 @@ interface IBody extends MatterJS.BodyType {
 export default class Game extends Phaser.Scene {
   ball?: Phaser.Physics.Matter.Sprite
   leftLever?: MatterJS.BodyType
+  lightSprites?: Phaser.GameObjects.Sprite[]
   rightLever?: MatterJS.BodyType
   bumpers?: IBody[]
   fader?: Fader
@@ -297,7 +310,9 @@ export default class Game extends Phaser.Scene {
   }
 
   createLights = () => {
-    const lights = LIGHTS.map((p) => this.add.sprite(p.x, p.y, 'light', 0))
+    const lights = LIGHTS.map((p) =>
+      this.add.sprite(p.x, p.y, 'light', 0).setData('label', p.label),
+    )
 
     const lights2 = new Array(8)
       .fill('')
@@ -308,6 +323,12 @@ export default class Game extends Phaser.Scene {
 
     const light = this.add.sprite(80, 200, 'light', 1)
     const circleLights = [light, ...lights2, ...lights3]
+    // @ts-ignore
+    circleLights.forEach((l, i) => {
+      l.setDataEnabled()
+      l.data.set('label', `circle-light-${i}`)
+    })
+    this.lightSprites = [...circleLights, ...lights]
 
     // circleLights.forEach((l, i) => {
     //   this.time.addEvent({
@@ -335,11 +356,9 @@ export default class Game extends Phaser.Scene {
 
   createPost = () => {
     const conf = { isStatic: true, chamfer: { radius: 3 } }
-    const posts = [
-      this.matter.add.sprite(54, 58, 'post', 0, conf),
-      this.matter.add.sprite(71, 51, 'post', 0, conf),
-      this.matter.add.sprite(89, 48, 'post', 0, conf),
-    ]
+    const posts = POSTS.map((p) =>
+      this.matter.add.sprite(p.x, p.y, 'post', 0, conf),
+    )
     posts.forEach((p) => {
       // @ts-ignore
       p.body.label = 'post'
@@ -466,7 +485,19 @@ export default class Game extends Phaser.Scene {
     } else if (checkBodies('ball', 'lever')) {
       //
     } else {
+      if (other.label.includes('light')) {
+        this.toggleLight(other.label)
+      }
       console.log(bodyA.label, bodyB.label)
+    }
+  }
+
+  toggleLight = (label: string) => {
+    const light = this.lightSprites?.find((l) => l.data.get('label') === label)
+
+    if (light) {
+      // @ts-ignore
+      light.setFrame(light.frame?.name === 0 ? 1 : 0)
     }
   }
 
