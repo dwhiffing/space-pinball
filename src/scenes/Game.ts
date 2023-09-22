@@ -31,7 +31,7 @@ const REFUEL_WARP = { x: 52, y: 145 }
 const REFUEL_ZONE = { x: -100, y: 148 }
 const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
-const AUTOFLIP_TARGET = 0
+const AUTOFLIP_TARGET = 3
 const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
@@ -74,7 +74,7 @@ const BALL_CONF = {
   mass: 3,
   category: 3,
   group: 3,
-  bounce: 0.1,
+  bounce: 0.15,
 }
 
 interface IBody extends MatterJS.BodyType {
@@ -150,10 +150,10 @@ export default class Game extends Phaser.Scene {
     if (!this.ball?.body) return
     const body = this.ball?.body as MatterJS.BodyType
     const direction = this.ball.body.position.x < 80 ? 0 : 1
-    const REFUEL = direction === 0 ? 68 : 92
-    const ORBIT = direction === 0 ? 70.5 : 91
-    const CENTER = direction === 0 ? 69 : 98
-    const SIDE = direction === 0 ? 71 : 90.5
+    const REFUEL = direction === 0 ? 68 : 94
+    const ORBIT = direction === 0 ? 70.5 : 92
+    const CENTER = direction === 0 ? 69 : 99
+    const SIDE = direction === 0 ? 71 : 91
     let target = REFUEL
     if (_target === 1) target = ORBIT
     if (_target === 2) target = CENTER
@@ -566,7 +566,7 @@ export default class Game extends Phaser.Scene {
 
     const MAX = DEBUG ? 500 : 2000
     const value = Math.min(this.time.now - this.data.get('plungestart'), MAX)
-    const force = value / (MAX * 10)
+    const force = value / (MAX * 8)
     if (force > 0.06) this.cameras.main.shake(100, force / 5, true)
     this.sound.play('plunger', { volume: force * 5 })
     if (this.ball.body.position.y > 260 && this.ball.body.position.x > 160)
