@@ -32,7 +32,7 @@ const REFUEL_ZONE = { x: -100, y: 148 }
 const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
 const AUTOFLIP_TARGET = 3
-const START = DEBUG ? BUMPER_WARP : MAIN_CHUTE
+const START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.00035
@@ -77,6 +77,9 @@ const BALL_CONF = {
   bounce: 0.15,
 }
 
+const PASS_TOGGLES = [{ x: 80, y: 80, size: 6, label: 'test' }]
+const LIGHTS = [{ x: 80, y: 80, label: 'test' }]
+
 interface IBody extends MatterJS.BodyType {
   sprite: Phaser.GameObjects.Sprite
 }
@@ -106,6 +109,8 @@ export default class Game extends Phaser.Scene {
     this.createFlipper(true)
     this.createSlingshot(false)
     this.createPost()
+    this.createPassToggles()
+    this.createLights()
     this.createFlipper(false)
     this.bumpers = BUMPERS.map((b) => this.createBumper(b.x, b.y))
     this.createKick(10, 265)
@@ -289,6 +294,43 @@ export default class Game extends Phaser.Scene {
       .bitmapText(1, 145, 'clarity', '', -8)
       .setScrollFactor(0)
       .setOrigin(0, 1)
+  }
+
+  createLights = () => {
+    const lights = LIGHTS.map((p) => this.add.sprite(p.x, p.y, 'light', 0))
+
+    const lights2 = new Array(8)
+      .fill('')
+      .map((p) => this.add.sprite(0, 0, 'light', 1))
+    const lights3 = new Array(16)
+      .fill('')
+      .map((p) => this.add.sprite(0, 0, 'light', 1))
+
+    const light = this.add.sprite(80, 200, 'light', 1)
+    const circleLights = [light, ...lights2, ...lights3]
+
+    // circleLights.forEach((l, i) => {
+    //   this.time.addEvent({
+    //     repeat: -1,
+    //     delay: 500 + i * 10,
+    //     callback: () =>
+    //       // @ts-ignore
+    //       l.setFrame(i > 0 && l.frame.name === 0 ? 1 : 0),
+    //   })
+    // })
+    Phaser.Actions.PlaceOnCircle(lights2, new Phaser.Geom.Circle(80, 200, 14))
+    Phaser.Actions.PlaceOnCircle(lights3, new Phaser.Geom.Circle(80, 200, 28))
+  }
+
+  createPassToggles = () => {
+    PASS_TOGGLES.forEach((p) => {
+      const b = this.matter.add.circle(p.x, p.y, p.size, {
+        isSensor: true,
+        isStatic: true,
+      })
+      // @ts-ignore
+      b.label = p.label
+    })
   }
 
   createPost = () => {

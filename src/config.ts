@@ -10,12 +10,10 @@ export default {
     matter: {
       debug: PHYSICS_DEBUG
         ? {
-            showSeparation: true,
-            showAngleIndicator: true,
+            // showSeparation: true,
+            // showAngleIndicator: true,
             showCollisions: true,
             showSleeping: true,
-            showBody: true,
-            showStaticBody: true,
           }
         : false,
       gravity: { y: 0.44 },
