@@ -22,18 +22,18 @@ const BUMPER_WARP = { x: 88, y: 37 }
 const LEFT_SPINNER = { x: 20, y: 70 }
 // const START = { x: 150, y: 200 } // right chute
 // const START = { x: 20, y: 200 } // left chute
-const LEFT_FLIPPER = { x: 43, y: 243 }
-const RIGHT_FLIPPER = { x: 131, y: 235 }
-const GUTTER = { x: 13, y: 200 }
 // const START = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
 // const REFUEL_BOARD = { x: -100, y: 144 }
+const LEFT_FLIPPER = { x: 43, y: 243 }
+const RIGHT_FLIPPER = { x: 131, y: 235 }
+const GUTTER = { x: 13, y: 200 }
 const REFUEL_WARP = { x: 52, y: 145 }
 const REFUEL_ZONE = { x: -100, y: 148 }
 const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
 const AUTOFLIP_TARGET = 3
-const START = DEBUG ? LEFT_SPINNER : MAIN_CHUTE
+const START = DEBUG ? { x: 33, y: 190 } : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.00035
@@ -78,10 +78,19 @@ const BALL_CONF = {
   bounce: 0.15,
 }
 const LIGHTS = [
-  { x: 47, y: 62, label: 'post-light-0' },
-  { x: 72, y: 50, label: 'post-light-1' },
-  { x: 96, y: 50, label: 'post-light-2' },
+  { x: 47, y: 62, label: 'post-light:0' },
+  { x: 72, y: 50, label: 'post-light:1' },
+  { x: 96, y: 50, label: 'post-light:2' },
+  { x: 11, y: 210, label: 'base-light:0' },
+  { x: 28, y: 210, label: 'base-light:1' },
+  { x: 132, y: 210, label: 'base-light:2' },
+  { x: 149, y: 210, label: 'base-light:3' },
 ]
+const LIGHT_STATE = {
+  'post-light': new Array(3).fill(0),
+  'base-light': new Array(4).fill(0),
+  'circle-light': new Array(25).fill(0),
+}
 const POSTS = [
   { x: 59, y: 54 },
   { x: 84, y: 48 },
@@ -95,13 +104,13 @@ const PASS_TOGGLES = [
   ...LIGHTS.map((l, i) => ({
     x: l.x,
     y: l.y,
-    size: 6,
-    label: `post-light-${i}`,
+    size: 1,
+    label: l.label,
   })),
   ...SPINNERS.map((l, i) => ({
     x: l.x,
     y: l.y,
-    size: 6,
+    size: 1,
     label: `spinner-${i}`,
   })),
 ]
@@ -140,8 +149,9 @@ export default class Game extends Phaser.Scene {
     this.createSpinners()
     this.createPassToggles()
     this.createLights()
+    this.createBumpers()
     this.createFlipper(false)
-    this.bumpers = BUMPERS.map((b) => this.createBumper(b.x, b.y))
+
     this.createKick(10, 265)
     this.createKick(149, 265)
     this.createBall()
@@ -155,6 +165,19 @@ export default class Game extends Phaser.Scene {
       this.fader?.fade(DEBUG ? 50 : 1500)
     })
     this.data.set('allowcamerapan', true)
+    this.data.set('lightstate', LIGHT_STATE)
+    this.data.events.on(
+      'changedata-lightstate',
+      (_: any, state: Record<string, number[]>) => {
+        Object.entries(state).map(([k, vs]) => {
+          vs.forEach((value, index) => {
+            this.lightSprites
+              ?.find((l) => l.data.get('label') === `${k}:${index}`)
+              ?.setFrame(value)
+          })
+        })
+      },
+    )
 
     this.matter.world.on('collisionstart', this.onCollisionStart)
 
@@ -346,6 +369,10 @@ export default class Game extends Phaser.Scene {
       .setOrigin(0, 1)
   }
 
+  createBumpers = () => {
+    this.bumpers = BUMPERS.map((b) => this.createBumper(b.x, b.y))
+  }
+
   createLights = () => {
     const lights = LIGHTS.map((p) =>
       this.add.sprite(p.x, p.y, 'light', 0).setData('label', p.label),
@@ -363,7 +390,7 @@ export default class Game extends Phaser.Scene {
     // @ts-ignore
     circleLights.forEach((l, i) => {
       l.setDataEnabled()
-      l.data.set('label', `circle-light-${i}`)
+      l.data.set('label', `circle-light:${i}`)
     })
     this.lightSprites = [...circleLights, ...lights]
 
@@ -495,6 +522,7 @@ export default class Game extends Phaser.Scene {
     const ball = bodyA.label == 'ball' ? bodyA : bodyB
     const other = ball === bodyA ? bodyB : bodyA
     if (!ball) return
+
     if (checkBodies('ball', 'sling')) {
       const angle = other.position.x < 80 ? DegToRad(-45) : DegToRad(215)
       other.sprite.setFrame(1)
@@ -547,12 +575,21 @@ export default class Game extends Phaser.Scene {
   }
 
   toggleLight = (label: string) => {
-    const light = this.lightSprites?.find((l) => l.data.get('label') === label)
+    const [k, i] = label.split(':')
+    const state = this.data.get('lightstate')
+    state[k][i] = state[k][i] === 0 ? 1 : 0
+    this.data.set('lightstate', state)
+  }
 
-    if (light) {
-      // @ts-ignore
-      light.setFrame(light.frame?.name === 0 ? 1 : 0)
-    }
+  flipLights = (isLeft: boolean) => {
+    const state = this.data.get('lightstate') as Record<string, number[]>
+    const d = isLeft ? -1 : 1
+    Object.entries(state).forEach(([k, v]) => {
+      if (k === 'center-light') return
+      const s = state[k].concat([])
+      state[k] = s.map((_, i) => s[wrap(i + d, 0, s.length)])
+    })
+    this.data.set('lightstate', state)
   }
 
   onBallLost = () => {
@@ -635,7 +672,10 @@ export default class Game extends Phaser.Scene {
   }
 
   onFlip = (isLeft?: boolean, isDown?: boolean) => {
-    if (isDown) this.sound.play('flipper', { volume: 0.1, rate: 0.5 })
+    if (isDown) {
+      this.sound.play('flipper', { volume: 0.1, rate: 0.5 })
+      this.flipLights(!!isLeft)
+    }
     const target = isLeft ? this.leftTween : this.rightTween
     const max = isLeft ? MAXL : MAXR
     const min = isLeft ? MINL : MINR
@@ -704,4 +744,9 @@ export default class Game extends Phaser.Scene {
     if (this.ball.body.position.y > 260 && this.ball.body.position.x > 160)
       this.matter.applyForceFromAngle(body, force, DegToRad(-90))
   }
+}
+
+const wrap = function (n: number, min: number, max: number) {
+  var r = max - min
+  return min + ((((n - min) % r) + r) % r)
 }
