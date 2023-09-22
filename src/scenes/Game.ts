@@ -19,7 +19,7 @@ const MAXL = DegToRad(210 - D)
 const MINR = DegToRad(330)
 const MAXR = DegToRad(330 + D)
 const BUMPER_WARP = { x: 88, y: 37 }
-const LEFT_SPINNER = { x: 20, y: 37 }
+const LEFT_SPINNER = { x: 20, y: 70 }
 // const START = { x: 150, y: 200 } // right chute
 // const START = { x: 20, y: 200 } // left chute
 const LEFT_FLIPPER = { x: 43, y: 243 }
@@ -539,7 +539,7 @@ export default class Game extends Phaser.Scene {
       } else if (other.label.includes('spinner')) {
         this.spinners
           ?.find((l) => l.data.get('label') === other.label)
-          ?.data.set('speed', ball.velocity.y * 8)
+          ?.data.set('speed', ball.velocity.y * 4)
       } else {
         console.log(bodyA.label, bodyB.label)
       }
