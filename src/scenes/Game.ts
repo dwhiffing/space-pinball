@@ -179,6 +179,7 @@ export default class Game extends Phaser.Scene {
     )
 
     this.matter.world.on('collisionstart', this.onCollisionStart)
+    this.matter.world.on('collisionactive', this.onCollisionActive)
 
     const limitMaxSpeed = () => {
       let maxSpeed = 11
@@ -517,6 +518,33 @@ export default class Game extends Phaser.Scene {
     })
   }
 
+  onCollisionActive = (event: any, bodyA: IBody, bodyB: IBody) => {
+    const checkBodies = (a: string, b: string) =>
+      (bodyA.label == a && bodyB.label == b) ||
+      (bodyB.label == a && bodyA.label == b)
+    const ball = bodyA.label == 'ball' ? bodyA : bodyB
+    const other = ball === bodyA ? bodyB : bodyA
+    if (!ball) return
+    if (checkBodies('ball', 'refuel-warp')) {
+      this.warpBall(REFUEL_ZONE, true)
+    } else if (other.label.includes('spinner')) {
+      const spinner = this.spinners?.find(
+        (l) =>
+          l.data.get('label') === other.label &&
+          (l.data.get('speed') ?? 0) < 0.5,
+      )
+      if (spinner) {
+        if (ball.velocity.y < 0) {
+          this.ballImage?.setData('boosted', 0.0055)
+          this.time.delayedCall(50, () => this.ballImage?.setData('boosted', 0))
+        }
+
+        spinner.data.set('speed', ball.velocity.y * 4)
+        this.applyForceToBall('up', 0.1)
+      }
+    }
+  }
+
   onCollisionStart = (event: any, bodyA: IBody, bodyB: IBody) => {
     const checkBodies = (a: string, b: string) =>
       (bodyA.label == a && bodyB.label == b) ||
@@ -559,17 +587,11 @@ export default class Game extends Phaser.Scene {
       this.time.delayedCall(500, () =>
         this.matter.applyForceFromAngle(ball, 0.08, a),
       )
-    } else if (checkBodies('ball', 'refuel-warp')) {
-      this.warpBall(REFUEL_ZONE, true)
     } else if (checkBodies('ball', 'lever')) {
       //
     } else {
       if (other.label.includes('light')) {
         this.toggleLight(other.label)
-      } else if (other.label.includes('spinner')) {
-        this.spinners
-          ?.find((l) => l.data.get('label') === other.label)
-          ?.data.set('speed', ball.velocity.y * 4)
       } else {
         console.log(bodyA.label, bodyB.label)
       }
