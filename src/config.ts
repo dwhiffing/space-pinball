@@ -4,7 +4,7 @@ import { PHYSICS_DEBUG } from './constants'
 export default {
   type: Phaser.AUTO,
   parent: 'game',
-  backgroundColor: '#081820',
+  backgroundColor: '#346856',
   physics: {
     default: 'matter',
     matter: {

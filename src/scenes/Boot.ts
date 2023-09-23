@@ -30,10 +30,7 @@ export default class Boot extends Phaser.Scene {
       frameWidth: 15,
       frameHeight: 15,
     })
-    this.load.spritesheet('sling', 'assets/sling.png', {
-      frameWidth: 17,
-      frameHeight: 34,
-    })
+    this.load.image('sling', 'assets/sling.png')
     this.load.spritesheet('bumper', 'assets/bumper.png', {
       frameWidth: 18,
       frameHeight: 18,
@@ -47,7 +44,7 @@ export default class Boot extends Phaser.Scene {
       frameHeight: 8,
     })
     this.load.spritesheet('post', 'assets/post.png', {
-      frameWidth: 5,
+      frameWidth: 3,
       frameHeight: 12,
     })
     this.load.image('board', 'assets/board.png')

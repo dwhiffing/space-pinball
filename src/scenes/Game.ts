@@ -18,11 +18,11 @@ const MINL = DegToRad(210)
 const MAXL = DegToRad(210 - D)
 const MINR = DegToRad(330)
 const MAXR = DegToRad(330 + D)
-const BUMPER_WARP = { x: 88, y: 37 }
+const BUMPER_WARP = { x: 108, y: 37 }
 const LEFT_SPINNER = { x: 20, y: 70 }
 // const START = { x: 150, y: 200 } // right chute
 // const START = { x: 20, y: 200 } // left chute
-// const START = { x: 45, y: 200 } // left sling
+const LEFT_SLING = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
 // const REFUEL_BOARD = { x: -100, y: 144 }
 const LEFT_FLIPPER = { x: 43, y: 243 }
@@ -33,7 +33,7 @@ const REFUEL_ZONE = { x: -100, y: 148 }
 const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
 const MAIN_CHUTE = { x: 160, y: 240 }
 const AUTOFLIP_TARGET = 3
-const START = DEBUG ? { x: 33, y: 190 } : MAIN_CHUTE
+const START = DEBUG ? BUMPER_WARP : MAIN_CHUTE
 const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
 const F = 0.00035
@@ -52,7 +52,7 @@ const BOARD_CONF = {
   collisionFilter: { group: 1, mask: 1 },
 }
 
-const BUMPER_SIZE = 9
+const BUMPER_SIZE = 5
 const BUMPER_CONF = {
   label: 'bumper',
   restitution: 5,
@@ -63,9 +63,9 @@ const BUMPER_CONF = {
 const KICK_CONF = { label: 'kick', isSensor: true }
 
 const BUMPERS = [
-  { x: 59, y: 77 },
-  { x: 93, y: 72 },
-  { x: 75, y: 105 },
+  { x: 77, y: 89 },
+  { x: 106, y: 85 },
+  { x: 87, y: 113 },
 ]
 
 const BALL_CONF = {
@@ -78,9 +78,9 @@ const BALL_CONF = {
   bounce: 0.15,
 }
 const LIGHTS = [
-  { x: 47, y: 62, label: 'post-light:0' },
-  { x: 72, y: 50, label: 'post-light:1' },
-  { x: 96, y: 50, label: 'post-light:2' },
+  { x: 77, y: 51, label: 'post-light:0' },
+  { x: 93, y: 50, label: 'post-light:1' },
+  { x: 112, y: 54, label: 'post-light:2' },
   { x: 11, y: 210, label: 'base-light:0' },
   { x: 28, y: 210, label: 'base-light:1' },
   { x: 132, y: 210, label: 'base-light:2' },
@@ -92,12 +92,12 @@ const LIGHT_STATE = {
   'circle-light': new Array(25).fill(0),
 }
 const POSTS = [
-  { x: 59, y: 54 },
-  { x: 84, y: 48 },
+  { x: 103, y: 54 },
+  { x: 86, y: 48 },
 ]
 const SPINNERS = [
-  { x: 14, y: 102 },
-  { x: 142, y: 102 },
+  { x: 13, y: 118 },
+  { x: 148, y: 110 },
 ]
 
 const PASS_TOGGLES = [
@@ -142,19 +142,18 @@ export default class Game extends Phaser.Scene {
     this.matter.set60Hz()
     this.createBoard()
     this.createRefuelBoard()
-    this.createSlingshot(true)
+    this.createSlingshots()
     this.createFlipper(true)
-    this.createSlingshot(false)
     this.createPost()
     this.createSpinners()
     this.createPassToggles()
     this.createLights()
-    this.createBumpers()
     this.createFlipper(false)
 
     this.createKick(10, 265)
     this.createKick(149, 265)
     this.createBall()
+    this.createBumpers()
     this.createUI()
     this.setupInput()
     if (DEBUG_AUTO_FLIP) {
@@ -339,7 +338,7 @@ export default class Game extends Phaser.Scene {
       p.friction = F
     })
 
-    const refuelWarp = this.matter.add.circle(42, 125, 5, {
+    const refuelWarp = this.matter.add.circle(39, 128, 5, {
       isSensor: true,
       isStatic: true,
     })
@@ -441,26 +440,29 @@ export default class Game extends Phaser.Scene {
     })
   }
 
-  createSlingshot = (isLeft: boolean) => {
-    const bounceSVG = this.cache.xml.get('bounce')
-    const slingBase = this.matter.add.fromSVG(0, 0, bounceSVG, 1, BOARD_CONF)
-    const sling = this.matter.add.rectangle(0, 0, 3, 25, {
+  createSlingshots = () => {
+    this.createSlingshot(40, 224, true)
+    this.createSlingshot(119, 224, false)
+
+    this.createSlingshot(48, 128, true)
+    this.createSlingshot(118, 119, false)
+  }
+
+  createSlingshot = (x: number, y: number, isLeft: boolean) => {
+    const sling = this.matter.add.rectangle(0, 0, 3, 19, {
       isStatic: true,
       angle: isLeft ? -0.48 : 0.44,
     }) as IBody
 
     sling.sprite = this.add
-      .sprite(isLeft ? 34 : 125, 224, 'sling')
+      .sprite(x, y, 'sling')
       .setFlipX(!isLeft)
       .setOrigin(isLeft ? 0 : 1, 0.5)
+      .setAlpha(0)
 
-    if (!isLeft) this.matter.body.scale(slingBase, -1, 1)
     const a = Phaser.Display.Align.BOTTOM_CENTER
-    this.matter.alignBody(slingBase, isLeft ? 43 : 121, 239, a)
-    this.matter.alignBody(sling, isLeft ? 44 : 115, 235, a)
+    this.matter.alignBody(sling, isLeft ? x + 4 : x - 4, y + 11, a)
     sling.label = 'sling'
-    slingBase.label = 'board'
-    slingBase.friction = F
   }
 
   createBumper = (x: number, y: number) => {
@@ -525,8 +527,8 @@ export default class Game extends Phaser.Scene {
 
     if (checkBodies('ball', 'sling')) {
       const angle = other.position.x < 80 ? DegToRad(-45) : DegToRad(215)
-      other.sprite.setFrame(1)
-      this.time.delayedCall(150, () => other.sprite.setFrame(0))
+      other.sprite.setAlpha(1)
+      this.time.delayedCall(150, () => other.sprite.setAlpha(0))
       this.time.delayedCall(10, () =>
         this.matter.applyForceFromAngle(ball, 0.035, angle),
       )
