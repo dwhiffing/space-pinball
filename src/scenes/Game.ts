@@ -183,6 +183,8 @@ export default class Game extends Phaser.Scene {
 
     const limitMaxSpeed = () => {
       let maxSpeed = 11
+      const boost = this.ballImage?.getData('boosted') ?? 0
+      if (boost > 0) this.applyForceToBall('up', boost)
       const body = this.ball?.body as MatterJS.BodyType
       if (body.velocity.x > maxSpeed) {
         this.matter.setVelocity(body, maxSpeed, body.velocity.y)
@@ -738,6 +740,11 @@ export default class Game extends Phaser.Scene {
   onFlipRightUp = () => this.onFlip(false, false)
 
   onTilt = (direction: string) => {
+    this.applyForceToBall(direction, 0.01)
+    this.cameras.main.shake(100, 0.02, true)
+  }
+
+  applyForceToBall = (direction: string, strength: number) => {
     const body = this.ball?.body as MatterJS.BodyType
     const angle =
       direction === 'up'
@@ -747,8 +754,8 @@ export default class Game extends Phaser.Scene {
         : direction === 'right'
         ? DegToRad(0)
         : DegToRad(90)
-    this.matter.applyForceFromAngle(body, 0.01, angle)
-    this.cameras.main.shake(100, 0.02, true)
+
+    this.matter.applyForceFromAngle(body, strength, angle)
   }
 
   onShootStart = () => {
