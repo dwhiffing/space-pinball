@@ -16,7 +16,7 @@ export default {
             showSleeping: true,
           }
         : false,
-      gravity: { y: 0.44 },
+      gravity: { y: 0.37 },
       enableSleeping: true,
       positionIterations: 20,
       velocityIterations: 20,

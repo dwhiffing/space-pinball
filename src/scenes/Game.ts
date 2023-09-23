@@ -9,7 +9,7 @@ import { Fader } from '../services/Fader'
 const X = 53
 const Y = 260
 const LEVER = 32
-const WIDTH = -8
+const WIDTH = -10
 const D = 58
 const FLIPPER_DIST = 54
 const FLIP_DURATION = 52
@@ -25,8 +25,8 @@ const LEFT_SPINNER = { x: 20, y: 70 }
 const LEFT_SLING = { x: 45, y: 200 } // left sling
 // const START = { x: 98, y: 200 } // right sling
 // const REFUEL_BOARD = { x: -100, y: 144 }
-const LEFT_FLIPPER = { x: 43, y: 243 }
-const RIGHT_FLIPPER = { x: 131, y: 235 }
+const LEFT_FLIPPER = { x: 46, y: 245 }
+const RIGHT_FLIPPER = { x: 111, y: 246 }
 const GUTTER = { x: 13, y: 200 }
 const REFUEL_WARP = { x: 52, y: 145 }
 const REFUEL_ZONE = { x: -100, y: 148 }
@@ -42,8 +42,8 @@ const FLIPPER_CONF = {
   label: 'flipper',
   density: 1,
   mass: 60,
-  friction: F,
-  restitution: 0.01,
+  friction: F * 100,
+  restitution: 0.1,
   collisionFilter: { group: 3, mask: 2 },
 }
 
@@ -104,13 +104,13 @@ const PASS_TOGGLES = [
   ...LIGHTS.map((l, i) => ({
     x: l.x,
     y: l.y,
-    size: 1,
+    size: 2,
     label: l.label,
   })),
   ...SPINNERS.map((l, i) => ({
     x: l.x,
     y: l.y,
-    size: 1,
+    size: 6,
     label: `spinner-${i}`,
   })),
 ]
@@ -206,10 +206,10 @@ export default class Game extends Phaser.Scene {
     if (!this.ball?.body) return
     const body = this.ball?.body as MatterJS.BodyType
     const direction = this.ball.body.position.x < 80 ? 0 : 1
-    const REFUEL = direction === 0 ? 68 : 94
-    const ORBIT = direction === 0 ? 70.5 : 92
-    const CENTER = direction === 0 ? 69 : 99
-    const SIDE = direction === 0 ? 71 : 91
+    const REFUEL = direction === 0 ? 68 : 90
+    const ORBIT = direction === 0 ? 71 : 88
+    const CENTER = direction === 0 ? 64 : 99
+    const SIDE = direction === 0 ? 72 : 89.5
     let target = REFUEL
     if (_target === 1) target = ORBIT
     if (_target === 2) target = CENTER
@@ -338,7 +338,7 @@ export default class Game extends Phaser.Scene {
       p.friction = F
     })
 
-    const refuelWarp = this.matter.add.circle(39, 128, 5, {
+    const refuelWarp = this.matter.add.circle(42, 130, 5, {
       isSensor: true,
       isStatic: true,
     })
@@ -488,7 +488,7 @@ export default class Game extends Phaser.Scene {
     } else {
       this.rightTween = { x: MINR }
     }
-    const flipper = this.matter.add.rectangle(x, y, 24, 3, FLIPPER_CONF)
+    const flipper = this.matter.add.rectangle(x, y, 25, 3, FLIPPER_CONF)
     this.matter.add.worldConstraint(flipper, 0, 0.1, {
       pointA: new Phaser.Math.Vector2(x, y),
       pointB: new Phaser.Math.Vector2(WIDTH, 0),
