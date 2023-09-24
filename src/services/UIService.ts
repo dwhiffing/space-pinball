@@ -42,18 +42,22 @@ export default class UIService {
       .rectangle(0, 144, 160, 8, 0x081820)
       .setScrollFactor(0)
       .setOrigin(0, 1)
+      .setDepth(100)
     this.message = this.scene.add
       .bitmapText(1, 145, 'clarity', '', -8)
       .setScrollFactor(0)
       .setOrigin(0, 1)
+      .setDepth(100)
     this.scoreText = this.scene.add
       .bitmapText(160, 145, 'clarity', '', -8)
       .setScrollFactor(0)
       .setOrigin(1, 1)
+      .setDepth(100)
     this.ballText = this.scene.add
       .bitmapText(1, 145, 'clarity', '', -8)
       .setScrollFactor(0)
       .setOrigin(0, 1)
+      .setDepth(100)
   }
 
   resetUI = () => {

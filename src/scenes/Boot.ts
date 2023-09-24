@@ -56,6 +56,7 @@ export default class Boot extends Phaser.Scene {
       frameHeight: 12,
     })
     this.load.image('board', 'assets/board.png')
+    this.load.image('board-top', 'assets/board-top.png')
     this.load.image('refuel-board', 'assets/refuel-board.png')
     this.load.image('menu', 'assets/menu.png')
     this.load.spritesheet('flipper', 'assets/flipper.png', {
