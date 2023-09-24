@@ -92,7 +92,7 @@ export const POSTS = [
   { x: 86, y: 48 },
 ]
 export const SPINNERS = [
-  { x: 13, y: 118 },
+  { x: 14, y: 118 },
   { x: 148, y: 110 },
 ]
 
