@@ -24,8 +24,10 @@ export default class Menu extends Phaser.Scene {
       )
       .setOrigin(0.5, 1)
 
-    this.input.keyboard.addKey('Z').on('down', this.start)
-    this.input.keyboard.addKey('Enter').on('down', this.start)
+    this.time.delayedCall(1500, () => {
+      this.input.keyboard.addKey('Z').on('down', this.start)
+      this.input.keyboard.addKey('Enter').on('down', this.start)
+    })
     this.fader = new Fader(this, true)
     this.fader.fade(1500)
   }

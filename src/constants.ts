@@ -1,5 +1,5 @@
-export const DEBUG = false
-export const DEBUG_AUTO_FLIP = false
+export const DEBUG = true
+export const DEBUG_AUTO_FLIP = true
 export const PHYSICS_DEBUG = false
 
 // #081820
@@ -25,9 +25,13 @@ export const REFUEL_ZONE_WARPER = {
 }
 export const REFUEL_ZONE = { x: -100, y: 148 }
 export const AUTOFLIP_TARGET = 1
-export const BALL_START = DEBUG ? RIGHT_FLIPPER : MAIN_CHUTE
-export const LEVER_CONF = { isSensor: true, isStatic: true }
+
+// BALL START ----------------------------------
+export const BALL_START = DEBUG ? LEFT_FLIPPER : MAIN_CHUTE
+
+export const PLUNGE_MAX = DEBUG ? 500 : 2000
 export const BASE_FRICTION = 0.00035
+export const LEVER_CONF = { isSensor: true, isStatic: true }
 
 export const FLIPPER_CONF = {
   label: 'flipper',
