@@ -4,9 +4,9 @@
 		.s0 { fill: none;stroke: #ff0000;stroke-miterlimit:100 } 
 	</style>
 	<g id="Folder 1">
-		<path id="Shape 1" fill-rule="evenodd" class="s0" d="m18 65v37l38 18v-8l-35-18v-31z"/>
-		<path id="Shape 1 copy" fill-rule="evenodd" class="s0" d="m142 65v37l-38 18v-8l35-18v-31z"/>
-		<path id="Shape 3" class="s0" d="m160-8.7l0.1 152.7h-64.1v-4l46-23v6h14v-69l-20.5-20.5v-16.5l-0.3-25.4"/>
-		<path id="Shape 4" class="s0" d="m21.7-4.5l0.3 39.5-18 18v70h14v-7l46 23v5h-64v-149.5"/>
+		<path id="Layer 1" class="s0" d="m149 0h-149v144h64v-5l-60.7-28.7 0.5-81 6.6-12.7 12.9-7.6 115.4-0.5z"/>
+		<path id="Shape 1" class="s0" d="m160 18v126h-63.6l0.6-5 59.3-28.8v-87.4z"/>
+		<path id="Shape 2" class="s0" d="m21 63l1 31 34 17-1 8-37-18z"/>
+		<path id="Shape 3" class="s0" d="m104 111l35-17v-31l3 38-37.9 18.8z"/>
 	</g>
 </svg>

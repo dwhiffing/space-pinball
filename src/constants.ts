@@ -23,7 +23,7 @@ export const REFUEL_ZONE_WARPER = {
   x: REFUEL_WARP.x - 10,
   y: REFUEL_WARP.y - 20,
 }
-export const REFUEL_ZONE = { x: -100, y: 148 }
+export const REFUEL_ZONE = { x: -25, y: 140 }
 export const AUTOFLIP_TARGET = 1
 
 // BALL START ----------------------------------

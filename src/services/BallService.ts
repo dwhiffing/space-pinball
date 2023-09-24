@@ -166,7 +166,7 @@ export default class BallService {
       this.scene.data.set('ball-lost', false)
       this.scene.data.values.balls--
       this.warpBall(constants.BALL_START)
-      if (constants.DEBUG_AUTO_FLIP) this.scene.flipperService!.autoFlip()
+      // if (constants.DEBUG_AUTO_FLIP) this.scene.flipperService!.autoFlip()
     } else {
       this.scene.gameOver()
     }
@@ -185,7 +185,11 @@ export default class BallService {
   onShootStart = () => {
     this.scene.sound.play('click', { volume: 0.5 })
     this.scene.data.set('plungestart', this.scene.time.now)
-    this.scene.time.delayedCall(constants.PLUNGE_MAX + 1000, this.onShoot)
+    const r = this.scene.time.delayedCall(
+      constants.PLUNGE_MAX + 1000,
+      this.onShoot,
+    )
+    this.scene.data.set('plungetimer', r)
 
     this.shootTween = this.scene.tweens.add({
       targets: this.scene.boardService!.plunger,
@@ -198,6 +202,7 @@ export default class BallService {
     if (!this.ball?.body) return
     const body = this.ball?.body as MatterJS.BodyType
     if (!this.scene.data.get('plungestart')) return
+    this.scene.data.get('plungetimer')?.destroy()
     const value = Math.min(
       this.scene.time.now - this.scene.data.get('plungestart'),
       constants.PLUNGE_MAX,
