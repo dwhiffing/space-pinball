@@ -108,6 +108,15 @@ export default class BoardService {
     this.scene.sound.play('sling', { volume: 0.2 })
   }
 
+  onHitHyperspace = () => {
+    const t = this.scene.data.get('hyperspacetime')
+    if (t ? Math.abs(t - this.scene.time.now) : 9999 < 3000) return
+    this.scene.data.set('hyperspacetime', this.scene.time.now)
+    this.scene.ballService?.holdBall(1500, () =>
+      this.scene.ballService!.fireBall(65, 0.06),
+    )
+  }
+
   onHitSpinner = (label: string, velocity: number) => {
     const spinner = this.spinners?.find(
       (l) => l.data.get('label') === label && (l.data.get('speed') ?? 0) < 0.5,
@@ -170,6 +179,12 @@ export default class BoardService {
       isStatic: true,
     })
     refuelWarp.label = 'refuel-warp'
+
+    const hyperspaceSensor = this.scene.matter.add.circle(131, 102, 5, {
+      isSensor: true,
+      isStatic: true,
+    })
+    hyperspaceSensor.label = 'hyperspace'
 
     this.outReturns = [
       this.scene.add.sprite(11, 273, 'kicker'),

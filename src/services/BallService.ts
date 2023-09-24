@@ -95,6 +95,12 @@ export default class BallService {
     })
   }
 
+  fireBall = (angle: number, force: number, x?: number, y?: number) => {
+    if (x && y) this.warpBall({ x, y })
+    const body = this.ball?.body as MatterJS.BodyType
+    this.scene.matter.applyForceFromAngle(body, force, DegToRad(angle))
+  }
+
   warpBall = (
     { x, y }: { x: number; y: number },
     forceCamera = false,
@@ -131,6 +137,14 @@ export default class BallService {
       this.scene.matter.setVelocity(body, 0, 0)
       this.scene.matter.setAngularVelocity(body, 0)
     }
+  }
+
+  holdBall = (duration: number, onComplete: () => void) => {
+    this.ball!.setToSleep()
+    this.scene.time.delayedCall(duration, () => {
+      this.ball!.setAwake()
+      onComplete()
+    })
   }
 
   applyForceToBall = (direction: string, strength: number) => {

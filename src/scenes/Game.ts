@@ -35,8 +35,8 @@ export default class Game extends Phaser.Scene {
     this.lightService = new LightService(this)
     this.lightService.createLights()
     this.lightService.updateTravelLights()
-    this.uiService = new UIService(this)
     this.ballService = new BallService(this)
+    this.uiService = new UIService(this)
     this.fader = new Fader(this, true)
     this.setupInput()
 
@@ -92,6 +92,8 @@ export default class Game extends Phaser.Scene {
 
     if (checkBodies('ball', 'refuel-warp')) {
       this.ballService!.warpBall(constants.REFUEL_ZONE, true)
+    } else if (checkBodies('ball', 'hyperspace')) {
+      this.boardService!.onHitHyperspace()
     } else if (other.label.includes('spinner')) {
       this.boardService!.onHitSpinner(other.label, ball.velocity.y)
     }
@@ -141,7 +143,7 @@ export default class Game extends Phaser.Scene {
     this.input.keyboard.addKey('down').on('up', onShoot)
     this.input.keyboard.addKey('space').on('down', () => onTilt('up'))
     this.input.keyboard.addKey('left').on('down', () => onTilt('left'))
-    this.input.keyboard.addKey('FLIPPER_X').on('down', () => onTilt('right'))
+    this.input.keyboard.addKey('x').on('down', () => onTilt('right'))
   }
 }
 

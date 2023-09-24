@@ -1,5 +1,5 @@
-export const DEBUG = true
-export const DEBUG_AUTO_FLIP = true
+export const DEBUG = false
+export const DEBUG_AUTO_FLIP = false
 export const PHYSICS_DEBUG = false
 
 // #081820
