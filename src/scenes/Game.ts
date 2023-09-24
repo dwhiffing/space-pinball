@@ -1,119 +1,8 @@
 import Phaser from 'phaser'
-import { DEBUG, DEBUG_AUTO_FLIP } from '../constants'
+import * as constants from '../constants'
 import { Fader } from '../services/Fader'
-// #081820
-// #346856
-// #88c070
-// #e0f8d0
 
-const X = 53
-const Y = 260
-const LEVER = 32
-const WIDTH = -10
-const D = 58
-const FLIPPER_DIST = 54
-const FLIP_DURATION = 52
-const DegToRad = Phaser.Math.DegToRad
-const MINL = DegToRad(210)
-const MAXL = DegToRad(210 - D)
-const MINR = DegToRad(330)
-const MAXR = DegToRad(330 + D)
-const BUMPER_WARP = { x: 108, y: 37 }
-const LEFT_SPINNER = { x: 20, y: 70 }
-// const START = { x: 150, y: 200 } // right chute
-// const START = { x: 20, y: 200 } // left chute
-const LEFT_SLING = { x: 45, y: 200 } // left sling
-// const START = { x: 98, y: 200 } // right sling
-// const REFUEL_BOARD = { x: -100, y: 144 }
-const LEFT_FLIPPER = { x: 46, y: 245 }
-const RIGHT_FLIPPER = { x: 111, y: 246 }
-const GUTTER = { x: 13, y: 200 }
-const REFUEL_WARP = { x: 52, y: 145 }
-const REFUEL_ZONE = { x: -100, y: 148 }
-const REFUEL_ZONE_WARPER = { x: REFUEL_WARP.x - 10, y: REFUEL_WARP.y - 20 }
-const MAIN_CHUTE = { x: 160, y: 240 }
-const AUTOFLIP_TARGET = 3
-const START = DEBUG ? BUMPER_WARP : MAIN_CHUTE
-const LEVER_CONF = { isSensor: true, isStatic: true }
 const CENTER = Phaser.Display.Align.CENTER
-const F = 0.00035
-
-const FLIPPER_CONF = {
-  label: 'flipper',
-  density: 1,
-  mass: 60,
-  friction: F * 100,
-  restitution: 0.1,
-  collisionFilter: { group: 3, mask: 2 },
-}
-
-const BOARD_CONF = {
-  isStatic: true,
-  collisionFilter: { group: 1, mask: 1 },
-}
-
-const BUMPER_SIZE = 5
-const BUMPER_CONF = {
-  label: 'bumper',
-  restitution: 5,
-  friction: F,
-  mass: 2,
-  collisionFilter: { group: 3, mask: 2 },
-}
-const KICK_CONF = { label: 'kick', isSensor: true }
-
-const BUMPERS = [
-  { x: 77, y: 89 },
-  { x: 106, y: 85 },
-  { x: 87, y: 113 },
-]
-
-const BALL_CONF = {
-  circleRadius: 6,
-  staticFriction: 50,
-  density: 0.00001,
-  mass: 3,
-  category: 3,
-  group: 3,
-  bounce: 0.15,
-}
-const LIGHTS = [
-  { x: 77, y: 51, label: 'post-light:0' },
-  { x: 93, y: 50, label: 'post-light:1' },
-  { x: 112, y: 54, label: 'post-light:2' },
-  { x: 11, y: 210, label: 'base-light:0' },
-  { x: 28, y: 210, label: 'base-light:1' },
-  { x: 132, y: 210, label: 'base-light:2' },
-  { x: 149, y: 210, label: 'base-light:3' },
-]
-const LIGHT_STATE = {
-  'post-light': new Array(3).fill(0),
-  'base-light': new Array(4).fill(0),
-  'circle-light': new Array(25).fill(0),
-}
-const POSTS = [
-  { x: 103, y: 54 },
-  { x: 86, y: 48 },
-]
-const SPINNERS = [
-  { x: 13, y: 118 },
-  { x: 148, y: 110 },
-]
-
-const PASS_TOGGLES = [
-  ...LIGHTS.map((l, i) => ({
-    x: l.x,
-    y: l.y,
-    size: 2,
-    label: l.label,
-  })),
-  ...SPINNERS.map((l, i) => ({
-    x: l.x,
-    y: l.y,
-    size: 6,
-    label: `spinner-${i}`,
-  })),
-]
 
 interface IBody extends MatterJS.BodyType {
   sprite: Phaser.GameObjects.Sprite
@@ -129,6 +18,8 @@ export default class Game extends Phaser.Scene {
   fader?: Fader
   ballImage?: Phaser.GameObjects.Sprite
   message?: Phaser.GameObjects.BitmapText
+  scoreText?: Phaser.GameObjects.BitmapText
+  ballText?: Phaser.GameObjects.BitmapText
   flipperImageLeft?: Phaser.GameObjects.Sprite
   flipperImageRight?: Phaser.GameObjects.Sprite
   leftTween?: { x: number }
@@ -139,6 +30,12 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
+    this.data.set('score', 0)
+    this.data.set('balls', 3)
+    this.data.set('requiredScore', constants.PLANET_SCORES[0])
+    this.data.set('targetPlanet', 0)
+    this.data.set('allowcamerapan', true)
+
     this.matter.set60Hz()
     this.createBoard()
     this.createRefuelBoard()
@@ -156,56 +53,40 @@ export default class Game extends Phaser.Scene {
     this.createBumpers()
     this.createUI()
     this.setupInput()
-    if (DEBUG_AUTO_FLIP) {
+    if (constants.DEBUG_AUTO_FLIP) {
       this.time.delayedCall(1, () => this.autoFlip())
     }
     this.fader = new Fader(this, true)
     this.time.delayedCall(5, () => {
-      this.fader?.fade(DEBUG ? 50 : 1500)
+      this.fader?.fade(constants.DEBUG ? 50 : 1500)
     })
-    this.data.set('allowcamerapan', true)
-    this.data.set('lightstate', LIGHT_STATE)
-    this.data.events.on(
-      'changedata-lightstate',
-      (_: any, state: Record<string, number[]>) => {
-        Object.entries(state).map(([k, vs]) => {
-          vs.forEach((value, index) => {
-            this.lightSprites
-              ?.find((l) => l.data.get('label') === `${k}:${index}`)
-              ?.setFrame(value)
-          })
-        })
-      },
-    )
 
+    this.data.events.on('changedata-lightstate', this.changeLightData)
+    this.data.events.on('changedata-score', this.resetUI)
     this.matter.world.on('collisionstart', this.onCollisionStart)
     this.matter.world.on('collisionactive', this.onCollisionActive)
 
-    const limitMaxSpeed = () => {
-      let maxSpeed = 11
-      const boost = this.ballImage?.getData('boosted') ?? 0
-      if (boost > 0) this.applyForceToBall('up', boost)
-      const body = this.ball?.body as MatterJS.BodyType
-      if (body.velocity.x > maxSpeed) {
-        this.matter.setVelocity(body, maxSpeed, body.velocity.y)
-      }
+    this.data.set('lightstate', constants.LIGHT_STATE)
+    this.data.set('lightstate', constants.LIGHT_STATE)
 
-      if (body.velocity.x < -maxSpeed) {
-        this.matter.setVelocity(body, -maxSpeed, body.velocity.y)
-      }
+    this.updateTravelLights()
+    this.resetUI()
 
-      if (body.velocity.y > maxSpeed) {
-        this.matter.setVelocity(body, body.velocity.x, maxSpeed)
-      }
-
-      if (body.velocity.y < -maxSpeed) {
-        this.matter.setVelocity(body, body.velocity.x, -maxSpeed)
-      }
-    }
-    this.matter.world.on('beforeupdate', limitMaxSpeed)
+    this.matter.world.on('beforeupdate', this.checkBallSpeed)
   }
 
-  autoFlip = (_target = AUTOFLIP_TARGET) => {
+  update() {
+    this.fader?.update()
+    if (!this.ball?.body) return
+
+    this.checkCameraPan()
+    this.updateBall()
+    this.updateLights()
+    this.updateTravelStatus()
+    this.updateSpinners()
+  }
+
+  autoFlip = (_target = constants.AUTOFLIP_TARGET) => {
     if (!this.ball?.body) return
     const body = this.ball?.body as MatterJS.BodyType
     const direction = this.ball.body.position.x < 80 ? 0 : 1
@@ -243,34 +124,14 @@ export default class Game extends Phaser.Scene {
     return { x, y }
   }
 
-  update() {
-    this.fader?.update()
-    if (!this.ball?.body) return
+  updateBumpers = () => {
+    this.bumpers?.forEach((b) =>
+      b.sprite.setPosition(b.position.x, b.position.y),
+    )
+  }
+
+  updateBall = () => {
     const body = this.ball?.body as MatterJS.BodyType
-    const cameraPos = this.getCameraPosition()
-    const allowPan = this.data.get('allowcamerapan')
-
-    if (
-      allowPan &&
-      (this.cameras.main.x !== cameraPos.x ||
-        this.cameras.main.y !== cameraPos.y)
-    ) {
-      this.cameras.main.pan(cameraPos.x, cameraPos.y, 120, undefined, true)
-    }
-
-    const shouldFlipAt = this.data.get('shouldflipat')
-    const direction = body.position.x < 80 ? 0 : 1
-
-    if (
-      shouldFlipAt &&
-      (direction === 0
-        ? body.position.x >= shouldFlipAt
-        : body.position.x <= shouldFlipAt)
-    ) {
-      this.data.set('shouldflipat', 0)
-      this.onFlip(direction === 0, true)
-      this.time.delayedCall(500, () => this.onFlip(direction === 0, false))
-    }
 
     if (
       !this.data.get('ball-lost') &&
@@ -287,10 +148,75 @@ export default class Game extends Phaser.Scene {
     const angle = Phaser.Math.RadToDeg(body.angle) % 360
     const frame = Math.floor((angle < 0 ? angle + 360 : angle) / 22.5)
     this.ballImage!.setFrame(frame)
-    this.bumpers?.forEach((b) =>
-      b.sprite.setPosition(b.position.x, b.position.y),
-    )
+  }
 
+  updateAutoflip = () => {
+    const body = this.ball?.body as MatterJS.BodyType
+    const shouldFlipAt = this.data.get('shouldflipat')
+    const direction = body.position.x < 80 ? 0 : 1
+
+    if (
+      shouldFlipAt &&
+      (direction === 0
+        ? body.position.x >= shouldFlipAt
+        : body.position.x <= shouldFlipAt)
+    ) {
+      this.data.set('shouldflipat', 0)
+      this.onFlip(direction === 0, true)
+      this.time.delayedCall(500, () => this.onFlip(direction === 0, false))
+    }
+  }
+
+  checkBallSpeed = () => {
+    let maxSpeed = 11
+    const boost = this.ballImage?.getData('boosted') ?? 0
+    if (boost > 0) this.applyForceToBall('up', boost)
+    const body = this.ball?.body as MatterJS.BodyType
+    if (body.velocity.x > maxSpeed) {
+      this.matter.setVelocity(body, maxSpeed, body.velocity.y)
+    }
+
+    if (body.velocity.x < -maxSpeed) {
+      this.matter.setVelocity(body, -maxSpeed, body.velocity.y)
+    }
+
+    if (body.velocity.y > maxSpeed) {
+      this.matter.setVelocity(body, body.velocity.x, maxSpeed)
+    }
+
+    if (body.velocity.y < -maxSpeed) {
+      this.matter.setVelocity(body, body.velocity.x, -maxSpeed)
+    }
+  }
+
+  checkCameraPan = () => {
+    const cameraPos = this.getCameraPosition()
+    const allowPan = this.data.get('allowcamerapan')
+
+    if (
+      allowPan &&
+      (this.cameras.main.x !== cameraPos.x ||
+        this.cameras.main.y !== cameraPos.y)
+    ) {
+      this.cameras.main.pan(cameraPos.x, cameraPos.y, 120, undefined, true)
+    }
+  }
+
+  updateLights = () => {
+    Object.entries(this.data.get('lightstate')).map(([k, vs]) => {
+      ;(vs as number[]).forEach((value, index) => {
+        const light = this.lightSprites?.find(
+          (l) => l.data.get('label') === `${k}:${index}`,
+        )
+        const freq = 1000
+
+        if (value === 2)
+          light?.setFrame(this.time.now % freq > freq / 2 ? 1 : 0)
+      })
+    })
+  }
+
+  updateSpinners = () => {
     this.spinners?.forEach((spinner) => {
       let speed = spinner.data.get('speed') ?? 0
       let playedSound = spinner.data.get('playedSound') ?? false
@@ -313,32 +239,100 @@ export default class Game extends Phaser.Scene {
     })
   }
 
+  gameOver = () => {
+    this.fader?.fade(2000)
+    this.time.delayedCall(2000, () => {
+      this.scene.start('MenuScene')
+    })
+  }
+
+  updateTravelStatus = () => {
+    let pp = this.data.values.score / this.data.values.requiredScore
+    let tp = this.data.values.targetPlanet
+    if (tp && pp < tp) {
+      const n = Math.floor(pp * 16) % 16
+
+      // TODO need to increase required score when achieved amount
+      // this.data.values.score += 5
+      pp = this.data.values.score / this.data.values.requiredScore
+      if (n !== this.data.values.lastplanetdecimal) {
+        this.data.set('lastplanetdecimal', n)
+        this.updateTravelLights()
+      }
+    }
+  }
+
+  updateTravelLights = () => {
+    let pp = this.data.values.score / this.data.values.requiredScore
+    const ls = this.data.values.lightstate
+    const n = (pp * 16) % 16
+    this.data.values.targetPlanet++
+    ls['inner-circle-light'] = ls['inner-circle-light'].map(
+      (_: any, i: number) => (Math.floor(pp) === i ? 2 : i > pp ? 0 : 1),
+    )
+    ls['outer-circle-light'] = ls['outer-circle-light'].map(
+      (_: any, i: number) => (Math.floor(n) === i ? 2 : i > n ? 0 : 1),
+    )
+    this.data.set('lightstate', ls)
+  }
+
+  changeLightData = () => {
+    const state = (this.data.get('lightstate') ?? {}) as Record<
+      string,
+      number[]
+    >
+    Object.entries(state).map(([k, vs]) => {
+      vs.forEach((value, index) => {
+        this.lightSprites
+          ?.find((l) => l.data.get('label') === `${k}:${index}`)
+          ?.setFrame(value ? 1 : 0)
+      })
+    })
+  }
+
   createBall = () => {
     this.ballImage = this.add.sprite(0, 0, 'ball')
     this.ball = this.matter.add.sprite(0, 0, 'ball', 0)
     this.ball.setAlpha(0)
-    this.ball.setCircle(BALL_CONF.circleRadius)
-    this.ball.setFriction(F)
-    this.ball.setFrictionStatic(BALL_CONF.staticFriction)
-    this.ball.setDensity(BALL_CONF.density)
-    this.ball.setMass(BALL_CONF.mass)
-    this.ball.setCollisionCategory(BALL_CONF.category)
-    this.ball.setCollisionGroup(BALL_CONF.group)
-    this.ball.setBounce(BALL_CONF.bounce)
+    this.ball.setCircle(constants.BALL_CONF.circleRadius)
+    this.ball.setFriction(constants.BASE_FRICTION)
+    this.ball.setFrictionStatic(constants.BALL_CONF.staticFriction)
+    this.ball.setDensity(constants.BALL_CONF.density)
+    this.ball.setMass(constants.BALL_CONF.mass)
+    this.ball.setCollisionCategory(constants.BALL_CONF.category)
+    this.ball.setCollisionGroup(constants.BALL_CONF.group)
+    this.ball.setBounce(constants.BALL_CONF.bounce)
     const body = this.ball?.body as MatterJS.BodyType
     body.label = 'ball'
-    this.warpBall(START)
+    this.resetBall()
     // this.ball.setSensor(true)
+  }
+
+  resetBall = () => {
+    if (this.data.values.balls > 0) {
+      this.data.set('ball-lost', false)
+      this.data.values.balls--
+      this.warpBall(constants.BALL_START)
+      if (constants.DEBUG_AUTO_FLIP) this.autoFlip()
+    } else {
+      this.gameOver()
+    }
   }
 
   createBoard = () => {
     const boardSVG = this.cache.xml.get('board')
-    const board = this.matter.add.fromSVG(0, 0, boardSVG, 1, BOARD_CONF)
+    const board = this.matter.add.fromSVG(
+      0,
+      0,
+      boardSVG,
+      1,
+      constants.BOARD_CONF,
+    )
     this.matter.alignBody(board, 96, 290, Phaser.Display.Align.BOTTOM_CENTER)
     this.add.image(0, 2, 'board').setOrigin(0, 0)
     board.parts.forEach((p) => {
       p.label = 'board'
-      p.friction = F
+      p.friction = constants.BASE_FRICTION
     })
 
     const refuelWarp = this.matter.add.circle(42, 130, 5, {
@@ -350,13 +344,19 @@ export default class Game extends Phaser.Scene {
 
   createRefuelBoard = () => {
     const boardSVG = this.cache.xml.get('refuel-board')
-    const board = this.matter.add.fromSVG(0, 0, boardSVG, 1, BOARD_CONF)
+    const board = this.matter.add.fromSVG(
+      0,
+      0,
+      boardSVG,
+      1,
+      constants.BOARD_CONF,
+    )
     this.matter.alignBody(board, -100, 288, Phaser.Display.Align.BOTTOM_CENTER)
-    board.friction = F / 10
+    board.friction = constants.BASE_FRICTION / 10
     this.add.image(-180, 144, 'refuel-board').setOrigin(0, 0)
     board.parts.forEach((p) => {
       p.label = 'board'
-      p.friction = F
+      p.friction = constants.BASE_FRICTION
     })
   }
 
@@ -369,48 +369,63 @@ export default class Game extends Phaser.Scene {
       .bitmapText(1, 145, 'clarity', '', -8)
       .setScrollFactor(0)
       .setOrigin(0, 1)
+    this.scoreText = this.add
+      .bitmapText(160, 145, 'clarity', '', -8)
+      .setScrollFactor(0)
+      .setOrigin(1, 1)
+    this.ballText = this.add
+      .bitmapText(1, 145, 'clarity', '', -8)
+      .setScrollFactor(0)
+      .setOrigin(0, 1)
   }
 
   createBumpers = () => {
-    this.bumpers = BUMPERS.map((b) => this.createBumper(b.x, b.y))
+    this.bumpers = constants.BUMPERS.map((b) => this.createBumper(b.x, b.y))
   }
 
   createLights = () => {
-    const lights = LIGHTS.map((p) =>
+    const lights = constants.LIGHTS.map((p) =>
       this.add.sprite(p.x, p.y, 'light', 0).setData('label', p.label),
     )
 
     const lights2 = new Array(8)
       .fill('')
-      .map((p) => this.add.sprite(0, 0, 'light', 1))
+      .map((p) => this.add.sprite(0, 0, 'light', 0))
     const lights3 = new Array(16)
       .fill('')
-      .map((p) => this.add.sprite(0, 0, 'light', 1))
+      .map((p) => this.add.sprite(0, 0, 'light', 0))
 
-    const light = this.add.sprite(80, 200, 'light', 1)
+    const light = this.add
+      .sprite(80, 200, 'light', 0)
+      .setData('label', 'center-light')
     const circleLights = [light, ...lights2, ...lights3]
     // @ts-ignore
-    circleLights.forEach((l, i) => {
+    lights2.forEach((l, i) => {
       l.setDataEnabled()
-      l.data.set('label', `circle-light:${i}`)
+      l.data.set('label', `inner-circle-light:${i}`)
+    })
+    lights3.forEach((l, i) => {
+      l.setDataEnabled()
+      l.data.set('label', `outer-circle-light:${i}`)
     })
     this.lightSprites = [...circleLights, ...lights]
 
-    // circleLights.forEach((l, i) => {
-    //   this.time.addEvent({
-    //     repeat: -1,
-    //     delay: 500 + i * 10,
-    //     callback: () =>
-    //       // @ts-ignore
-    //       l.setFrame(i > 0 && l.frame.name === 0 ? 1 : 0),
-    //   })
-    // })
-    Phaser.Actions.PlaceOnCircle(lights2, new Phaser.Geom.Circle(80, 200, 14))
-    Phaser.Actions.PlaceOnCircle(lights3, new Phaser.Geom.Circle(80, 200, 28))
+    Phaser.Actions.PlaceOnCircle(
+      lights2,
+      new Phaser.Geom.Circle(80, 200, 14),
+      -1.57,
+      4.71,
+    )
+    Phaser.Actions.PlaceOnCircle(
+      lights3,
+      new Phaser.Geom.Circle(80, 200, 28),
+      -1.57,
+      4.71,
+    )
   }
 
   createPassToggles = () => {
-    PASS_TOGGLES.forEach((p) => {
+    constants.PASS_TOGGLES.forEach((p) => {
       const b = this.matter.add.circle(p.x, p.y, p.size, {
         isSensor: true,
         isStatic: true,
@@ -421,7 +436,7 @@ export default class Game extends Phaser.Scene {
   }
 
   createSpinners = () => {
-    const spinners = SPINNERS.map((p, i) => {
+    const spinners = constants.SPINNERS.map((p, i) => {
       const sprite = this.add
         .sprite(p.x, p.y, 'spinner', 0)
         .setData('label', `spinner-${i}`)
@@ -434,7 +449,7 @@ export default class Game extends Phaser.Scene {
 
   createPost = () => {
     const conf = { isStatic: true, chamfer: { radius: 3 } }
-    const posts = POSTS.map((p) =>
+    const posts = constants.POSTS.map((p) =>
       this.matter.add.sprite(p.x, p.y, 'post', 0, conf),
     )
     posts.forEach((p) => {
@@ -469,7 +484,12 @@ export default class Game extends Phaser.Scene {
   }
 
   createBumper = (x: number, y: number) => {
-    const bump = this.matter.add.circle(0, 0, BUMPER_SIZE, BUMPER_CONF) as IBody
+    const bump = this.matter.add.circle(
+      0,
+      0,
+      constants.BUMPER_SIZE,
+      constants.BUMPER_CONF,
+    ) as IBody
     const _bumperImage = this.add.sprite(x, y, 'bumper')
     bump.sprite = _bumperImage
     const pointA = new Phaser.Math.Vector2(x, y)
@@ -478,44 +498,50 @@ export default class Game extends Phaser.Scene {
   }
 
   createKick = (x: number, y: number) => {
-    const bump = this.matter.add.circle(0, 0, 2, KICK_CONF) as IBody
+    const bump = this.matter.add.circle(0, 0, 2, constants.KICK_CONF) as IBody
     const pointA = new Phaser.Math.Vector2(x, y)
     this.matter.add.worldConstraint(bump, 0, 0.5, { pointA })
   }
 
   createFlipper = (isLeft: boolean) => {
-    const x = X + (isLeft ? 0 : FLIPPER_DIST)
-    const y = Y
+    const x = FLIPPER_X + (isLeft ? 0 : FLIPPER_DIST)
+    const y = FLIPPER_Y
     if (isLeft) {
       this.leftTween = { x: MINL }
     } else {
       this.rightTween = { x: MINR }
     }
-    const flipper = this.matter.add.rectangle(x, y, 25, 3, FLIPPER_CONF)
+    const flipper = this.matter.add.rectangle(
+      x,
+      y,
+      25,
+      3,
+      constants.FLIPPER_CONF,
+    )
     this.matter.add.worldConstraint(flipper, 0, 0.1, {
       pointA: new Phaser.Math.Vector2(x, y),
-      pointB: new Phaser.Math.Vector2(WIDTH, 0),
+      pointB: new Phaser.Math.Vector2(FLIPPER_WIDTH, 0),
     })
     const v = (isLeft ? this.leftTween : this.rightTween)!.x
-    const _x = x - Math.cos(v) * LEVER
-    const _y = y - Math.sin(v) * LEVER
-    const lever = this.matter.add.rectangle(_x, _y, 1, 1, LEVER_CONF)
+    const _x = x - Math.cos(v) * FLIPPER_LEVEL
+    const _y = y - Math.sin(v) * FLIPPER_LEVEL
+    const lever = this.matter.add.rectangle(_x, _y, 1, 1, constants.LEVER_CONF)
     lever.label = 'lever'
     if (isLeft) {
       this.leftLever = lever
       this.flipperImageLeft = this.add
-        .sprite(X - 4, Y + 3, 'flipper', 0)
+        .sprite(FLIPPER_X - 4, FLIPPER_Y + 3, 'flipper', 0)
         .setOrigin(0, 0.5)
     } else {
       this.rightLever = lever
       this.flipperImageRight = this.add
-        .sprite(X - 4 + (FLIPPER_DIST + 8), Y + 3, 'flipper', 0)
+        .sprite(FLIPPER_X - 4 + (FLIPPER_DIST + 8), FLIPPER_Y + 3, 'flipper', 0)
         .setOrigin(1, 0.5)
         .setFlipX(true)
     }
 
     this.matter.add.constraint(flipper, lever, 0, 0.15, {
-      pointA: new Phaser.Math.Vector2(WIDTH + LEVER, 0),
+      pointA: new Phaser.Math.Vector2(FLIPPER_WIDTH + FLIPPER_LEVEL, 0),
       pointB: new Phaser.Math.Vector2(),
     })
   }
@@ -528,7 +554,7 @@ export default class Game extends Phaser.Scene {
     const other = ball === bodyA ? bodyB : bodyA
     if (!ball) return
     if (checkBodies('ball', 'refuel-warp')) {
-      this.warpBall(REFUEL_ZONE, true)
+      this.warpBall(constants.REFUEL_ZONE, true)
     } else if (other.label.includes('spinner')) {
       const spinner = this.spinners?.find(
         (l) =>
@@ -611,7 +637,7 @@ export default class Game extends Phaser.Scene {
     const state = this.data.get('lightstate') as Record<string, number[]>
     const d = isLeft ? -1 : 1
     Object.entries(state).forEach(([k, v]) => {
-      if (k === 'center-light') return
+      if (!k.match(/base|post/)) return
       const s = state[k].concat([])
       state[k] = s.map((_, i) => s[wrap(i + d, 0, s.length)])
     })
@@ -624,18 +650,40 @@ export default class Game extends Phaser.Scene {
 
     this.sound.play('ball-lost', { volume: 0.35, rate: 0.9 })
     this.data.set('ball-lost', true)
-    this.time.delayedCall(DEBUG ? 1 : 1500, () => {
-      this.data.set('ball-lost', false)
-      this.warpBall(START)
-      if (DEBUG_AUTO_FLIP) this.autoFlip()
-    })
+    this.time.delayedCall(constants.DEBUG ? 1 : 1500, this.resetBall)
+    this.showMessage('Ball lost')
+  }
 
-    if (this.message) this.message.text = 'Ball lost'
+  showMessage = (m: string, duration = 3000) => {
+    if (!this.message) return
+    this.message.text = m
+
+    this.message.setAlpha(1)
+    this.ballText?.setAlpha(0)
+    this.scoreText?.setAlpha(0)
+    this.message.setData('activetime', this.time.now + duration)
+    this.time.delayedCall(duration, this.resetUI)
+  }
+
+  resetUI = () => {
+    if (!this.ballText || !this.message || !this.scoreText) return
+    if (
+      this.message.getData('activetime') &&
+      this.message.getData('activetime') > this.time.now
+    )
+      return
+
+    const { score, balls, rank } = this.data.values
+    this.message.setAlpha(0)
+    this.ballText.setAlpha(1)
+    this.scoreText.setAlpha(1)
+    this.ballText.text = `B: ${balls ?? 3} R: ${rank ?? 0}`
+    this.scoreText.text = `${score}`
   }
 
   onDrainRefuel = () => {
     this.data.set('ball-lost', true)
-    this.warpBall(REFUEL_WARP, true, () => {
+    this.warpBall(constants.REFUEL_WARP, true, () => {
       this.data.set('ball-lost', false)
     })
   }
@@ -647,7 +695,7 @@ export default class Game extends Phaser.Scene {
   ) => {
     const body = this.ball?.body as MatterJS.BodyType
     if (forceCamera) {
-      const t = DEBUG ? 10 : 500
+      const t = constants.DEBUG ? 10 : 500
       body.gravityScale.y = 0
       this.fader?.fade(t)
       this.time.delayedCall(t, () => {
@@ -683,7 +731,8 @@ export default class Game extends Phaser.Scene {
       .addKey('Z')
       .on('down', this.onFlipLeftDown)
       .on('up', this.onFlipLeftUp)
-    if (DEBUG) this.input.keyboard.addKey('R').on('down', this.onBallLost)
+    if (constants.DEBUG)
+      this.input.keyboard.addKey('R').on('down', this.onBallLost)
 
     this.input.keyboard
       .addKey('right')
@@ -694,7 +743,9 @@ export default class Game extends Phaser.Scene {
     this.input.keyboard.addKey('down').on('up', this.onShoot)
     this.input.keyboard.addKey('space').on('down', () => this.onTilt('up'))
     this.input.keyboard.addKey('left').on('down', () => this.onTilt('left'))
-    this.input.keyboard.addKey('X').on('down', () => this.onTilt('right'))
+    this.input.keyboard
+      .addKey('FLIPPER_X')
+      .on('down', () => this.onTilt('right'))
   }
 
   onFlip = (isLeft?: boolean, isDown?: boolean) => {
@@ -727,8 +778,10 @@ export default class Game extends Phaser.Scene {
         const lever = isLeft ? this.leftLever : this.rightLever
         if (!lever) return
         lever.position.x =
-          X + (isLeft ? 0 : FLIPPER_DIST) - Math.cos(target?.x ?? 0) * LEVER
-        lever.position.y = Y - Math.sin(target?.x ?? 0) * LEVER
+          FLIPPER_X +
+          (isLeft ? 0 : FLIPPER_DIST) -
+          Math.cos(target?.x ?? 0) * FLIPPER_LEVEL
+        lever.position.y = FLIPPER_Y - Math.sin(target?.x ?? 0) * FLIPPER_LEVEL
       },
     })
   }
@@ -767,7 +820,7 @@ export default class Game extends Phaser.Scene {
     if (!this.ball?.body) return
     const body = this.ball?.body as MatterJS.BodyType
 
-    const MAX = DEBUG ? 500 : 2000
+    const MAX = constants.DEBUG ? 500 : 2000
     const value = Math.min(this.time.now - this.data.get('plungestart'), MAX)
     const force = value / (MAX * 8)
     if (force > 0.06) this.cameras.main.shake(100, force / 5, true)
@@ -781,3 +834,16 @@ const wrap = function (n: number, min: number, max: number) {
   var r = max - min
   return min + ((((n - min) % r) + r) % r)
 }
+
+const FLIPPER_X = 53
+const FLIPPER_Y = 260
+const FLIPPER_LEVEL = 32
+const FLIPPER_WIDTH = -10
+const FLIPPER_DIST = 54
+const FLIP_DURATION = 52
+const DegToRad = Phaser.Math.DegToRad
+const delta = 58
+const MINL = DegToRad(210)
+const MAXL = DegToRad(210 - delta)
+const MINR = DegToRad(330)
+const MAXR = DegToRad(330 + delta)

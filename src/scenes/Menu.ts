@@ -26,7 +26,8 @@ export default class Menu extends Phaser.Scene {
 
     this.input.keyboard.addKey('Z').on('down', this.start)
     this.input.keyboard.addKey('Enter').on('down', this.start)
-    this.fader = new Fader(this)
+    this.fader = new Fader(this, true)
+    this.fader.fade(1500)
   }
 
   update() {
