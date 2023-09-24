@@ -9,6 +9,7 @@ interface IBody extends MatterJS.BodyType {
 export default class BoardService {
   scene: Game
   spinners?: Phaser.GameObjects.Sprite[]
+  outReturns?: Phaser.GameObjects.Sprite[]
   bumpers?: IBody[]
 
   constructor(scene: Game) {
@@ -60,9 +61,19 @@ export default class BoardService {
   }
 
   onHitKick = () => {
-    this.scene.time.delayedCall(500, () =>
-      this.scene.ballService?.applyForceToBall('up', 0.08),
-    )
+    this.scene.time.delayedCall(500, () => {
+      this.scene.ballService?.applyForceToBall('up', 0.06)
+      // @ts-ignore
+      const outReturn = this.outReturns!.at(
+        this.scene.ballService!.ball!.x < 80 ? 0 : 1,
+      )
+      this.scene.tweens.add({
+        targets: outReturn,
+        y: outReturn.y - 10,
+        yoyo: true,
+        duration: 60,
+      })
+    })
   }
 
   onHitSling = (isLeft: boolean, sprite: Phaser.GameObjects.Sprite) => {
@@ -143,6 +154,11 @@ export default class BoardService {
       isStatic: true,
     })
     refuelWarp.label = 'refuel-warp'
+
+    this.outReturns = [
+      this.scene.add.sprite(11, 273, 'kicker'),
+      this.scene.add.sprite(149, 273, 'kicker'),
+    ]
   }
 
   createRefuelBoard = () => {
