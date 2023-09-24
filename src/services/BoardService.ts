@@ -1,3 +1,4 @@
+import { BodyType } from 'matter'
 import Phaser from 'phaser'
 import * as constants from '../constants'
 import Game from '../scenes/Game'
@@ -10,6 +11,11 @@ export default class BoardService {
   scene: Game
   spinners?: Phaser.GameObjects.Sprite[]
   outReturns?: Phaser.GameObjects.Sprite[]
+  plunger?: Phaser.GameObjects.Sprite
+  rightDoorSprite?: Phaser.GameObjects.Sprite
+  leftDoorSprite?: Phaser.GameObjects.Sprite
+  leftDoorBody?: BodyType
+  rightDoorBody?: BodyType
   bumpers?: IBody[]
 
   constructor(scene: Game) {
@@ -63,17 +69,27 @@ export default class BoardService {
   onHitKick = () => {
     this.scene.time.delayedCall(500, () => {
       this.scene.ballService?.applyForceToBall('up', 0.06)
+      const isLeft = this.scene.ballService!.ball!.x < 80
       // @ts-ignore
-      const outReturn = this.outReturns!.at(
-        this.scene.ballService!.ball!.x < 80 ? 0 : 1,
-      )
+      const outReturn = this.outReturns!.at(isLeft ? 0 : 1)
       this.scene.tweens.add({
         targets: outReturn,
         y: outReturn.y - 10,
         yoyo: true,
         duration: 60,
       })
+      this.scene.time.delayedCall(100, () => {
+        this.toggleReturn(isLeft, false)
+      })
     })
+  }
+
+  toggleReturn = (isLeft: boolean, isOpen: boolean) => {
+    const body = isLeft ? this.leftDoorBody : this.rightDoorBody
+    const sprite = isLeft ? this.leftDoorSprite : this.rightDoorSprite
+    body!.collisionFilter.group = isOpen ? 4 : 3
+    body!.collisionFilter.mask = isOpen ? 4 : 2
+    sprite?.setAlpha(isOpen ? 0 : 1)
   }
 
   onHitSling = (isLeft: boolean, sprite: Phaser.GameObjects.Sprite) => {
@@ -159,6 +175,29 @@ export default class BoardService {
       this.scene.add.sprite(11, 273, 'kicker'),
       this.scene.add.sprite(149, 273, 'kicker'),
     ]
+
+    this.plunger = this.scene.add.sprite(167, 273, 'kicker')
+
+    this.rightDoorSprite = this.scene.add
+      .sprite(148, 261, 'return-door', 0)
+      .setFlipX(true)
+      .setAlpha(0)
+
+    this.leftDoorSprite = this.scene.add
+      .sprite(11, 261, 'return-door', 0)
+      .setAlpha(0)
+
+    this.leftDoorBody = this.scene.matter.add.rectangle(10, 260, 13, 2, {
+      isStatic: true,
+      angle: 0.35,
+      collisionFilter: { group: 4, mask: 4 },
+    })
+
+    this.rightDoorBody = this.scene.matter.add.rectangle(149, 260, 13, 2, {
+      isStatic: true,
+      angle: -0.35,
+      collisionFilter: { group: 4, mask: 4 },
+    })
   }
 
   createRefuelBoard = () => {

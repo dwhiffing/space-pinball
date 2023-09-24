@@ -11,6 +11,7 @@ export default class BallService {
   scene: Game
   ball?: Phaser.Physics.Matter.Sprite
   ballImage?: Phaser.GameObjects.Sprite
+  shootTween?: Phaser.Tweens.Tween
 
   constructor(scene: Game) {
     this.scene = scene
@@ -171,6 +172,12 @@ export default class BallService {
     this.scene.sound.play('click', { volume: 0.5 })
     this.scene.data.set('plungestart', this.scene.time.now)
     this.scene.time.delayedCall(constants.PLUNGE_MAX + 1000, this.onShoot)
+
+    this.shootTween = this.scene.tweens.add({
+      targets: this.scene.boardService!.plunger,
+      y: 280,
+      duration: constants.PLUNGE_MAX,
+    })
   }
 
   onShoot = () => {
@@ -187,6 +194,20 @@ export default class BallService {
     this.scene.sound.play('plunger', { volume: force * 5 })
     if (this.ball.body.position.y > 260 && this.ball.body.position.x > 160)
       this.scene.matter.applyForceFromAngle(body, force, DegToRad(-90))
+
+    this.shootTween?.stop()
+    this.scene.tweens.add({
+      targets: this.scene.boardService!.plunger,
+      y: 263,
+      duration: 50,
+      onComplete: () => {
+        this.scene.tweens.add({
+          targets: this.scene.boardService!.plunger,
+          y: 273,
+          duration: 50,
+        })
+      },
+    })
   }
 }
 const DegToRad = Phaser.Math.DegToRad
