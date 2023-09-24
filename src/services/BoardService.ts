@@ -108,6 +108,15 @@ export default class BoardService {
     this.scene.sound.play('sling', { volume: 0.2 })
   }
 
+  onHitWormhole = () => {
+    const t = this.scene.data.get('wormholetime')
+    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
+    this.scene.data.set('wormholetime', this.scene.time.now)
+    this.scene.ballService?.holdBall(1500, () =>
+      this.scene.ballService!.fireBall(-85, 0.04),
+    )
+  }
+
   onHitHyperspace = () => {
     const t = this.scene.data.get('hyperspacetime')
     if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
@@ -186,6 +195,12 @@ export default class BoardService {
       isStatic: true,
     })
     hyperspaceSensor.label = 'hyperspace'
+
+    const wormholeSensor = this.scene.matter.add.circle(32, 123, 4, {
+      isSensor: true,
+      isStatic: true,
+    })
+    wormholeSensor.label = 'wormhole'
 
     this.outReturns = [
       this.scene.add.sprite(11, 273, 'kicker'),
