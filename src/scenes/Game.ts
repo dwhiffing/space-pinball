@@ -95,10 +95,16 @@ export default class Game extends Phaser.Scene {
     } else if (checkBodies('ball', 'hyperspace')) {
       this.boardService!.onHitHyperspace()
     } else if (other.label.includes('spinner')) {
+      this.boardService?.onHitSpinner(other.label, ball.velocity.y)
     } else if (checkBodies('ball', 'secret')) {
       this.boardService!.onHitSecret()
     } else if (checkBodies('ball', 'wormhole')) {
       this.boardService!.onHitWormhole()
+    } else if (
+      checkBodies('ball', 'button') ||
+      checkBodies('ball', 'diagonal-button')
+    ) {
+      this.boardService!.onHitButton(other)
     } else if (other.label.includes('spinner')) {
       this.boardService!.onHitSpinner(other.label, ball.velocity.y)
     }
@@ -121,6 +127,8 @@ export default class Game extends Phaser.Scene {
       this.boardService!.onHitSling(other.position.x < 80, other.sprite)
     } else if (checkBodies('ball', 'bumper')) {
       this.boardService!.onHitBumper(ball.speed, other.sprite)
+    } else if (checkBodies('ball', 'wormhole')) {
+      this.boardService!.onHitWormhole()
     } else if (checkBodies('ball', 'kick')) {
       this.boardService!.onHitKick()
     } else if (other.label.includes('light')) {

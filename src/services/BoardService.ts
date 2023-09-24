@@ -12,6 +12,10 @@ export default class BoardService {
   spinners?: Phaser.GameObjects.Sprite[]
   outReturns?: Phaser.GameObjects.Sprite[]
   plunger?: Phaser.GameObjects.Sprite
+  button?: Phaser.Physics.Matter.Image
+  diagonalButton?: Phaser.Physics.Matter.Image
+  buttonCountText?: Phaser.GameObjects.Sprite
+  diagonalButtonCountText?: Phaser.GameObjects.Sprite
   rightDoorSprite?: Phaser.GameObjects.Sprite
   leftDoorSprite?: Phaser.GameObjects.Sprite
   leftDoorBody?: BodyType
@@ -30,6 +34,30 @@ export default class BoardService {
     this.createKick(10, 265)
     this.createKick(149, 265)
     this.createBumpers()
+    this.createButtons()
+
+    this.scene.data.set('buttonHitCount', 0)
+    this.scene.data.set('diagonalButtonHitCount', 0)
+
+    this.scene.data.events.on(
+      'changedata-buttonHitCount',
+      this.updateButtonText,
+    )
+    this.scene.data.events.on(
+      'changedata-diagonalButtonHitCount',
+      this.updateDiagonalButtonText,
+    )
+  }
+
+  destroy() {
+    this.scene.data.events.off(
+      'changedata-buttonHitCount',
+      this.updateButtonText,
+    )
+    this.scene.data.events.off(
+      'changedata-diagonalButtonHitCount',
+      this.updateDiagonalButtonText,
+    )
   }
 
   update() {
@@ -42,6 +70,11 @@ export default class BoardService {
       b.sprite.setPosition(b.position.x, b.position.y),
     )
   }
+
+  updateButtonText = (_: any, v: number) => this.buttonCountText?.setFrame(v)
+
+  updateDiagonalButtonText = (_: any, v: number) =>
+    this.diagonalButtonCountText?.setFrame(v)
 
   updateSpinners = () => {
     this.spinners?.forEach((spinner) => {
@@ -119,7 +152,7 @@ export default class BoardService {
 
   onHitWormhole = () => {
     const t = this.scene.data.get('wormholetime')
-    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
+    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 1000) return
     this.scene.data.set('wormholetime', this.scene.time.now)
     this.scene.ballService?.holdBall(1500, () =>
       this.scene.ballService!.fireBall(-85, 0.04),
@@ -267,6 +300,63 @@ export default class BoardService {
       p.label = 'board'
       p.friction = constants.BASE_FRICTION
     })
+  }
+
+  createButtons = () => {
+    this.button = this.scene.matter.add.image(44, 71, 'button', 0, {
+      isSensor: true,
+      isStatic: true,
+    })
+    this.diagonalButton = this.scene.matter.add.image(
+      61,
+      79,
+      'diagonal-button',
+      0,
+      { isSensor: true, isStatic: true },
+    )
+    //@ts-ignore
+    this.button.body.label = 'button'
+    //@ts-ignore
+    this.diagonalButton.body.label = 'diagonal-button'
+
+    this.buttonCountText = this.scene.add
+      .sprite(49, 71, 'numbers', 0)
+      .setDepth(99)
+      .setTintFill(0x346856)
+    this.diagonalButtonCountText = this.scene.add
+      .sprite(58, 74, 'numbers', 0)
+      .setDepth(99)
+      .setTintFill(0x346856)
+  }
+
+  onHitButton = (_button: any) => {
+    if (_button.label === 'button') {
+      const t = this.button?.getData('hittime') ?? 0
+      if (this.scene.time.now - t < 2000) return
+      this.button?.setData('hittime', this.scene.time.now)
+      this.scene.tweens.add({
+        targets: this.button,
+        x: 48,
+        yoyo: true,
+        duration: 250,
+      })
+
+      if (this.scene.data.values.buttonHitCount < 9)
+        this.scene.data.values.buttonHitCount++
+    } else {
+      const t = this.diagonalButton?.getData('hittime') ?? 0
+      if (this.scene.time.now - t < 2000) return
+      this.diagonalButton?.setData('hittime', this.scene.time.now)
+      if (this.scene.data.values.diagonalButtonHitCount < 9)
+        this.scene.data.values.diagonalButtonHitCount++
+      this.scene.tweens.add({
+        targets: this.diagonalButton,
+        x: 58,
+        y: 77,
+        yoyo: true,
+        duration: 250,
+      })
+    }
   }
 
   createBumpers = () => {

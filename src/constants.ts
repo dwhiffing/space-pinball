@@ -58,9 +58,9 @@ export const BUMPER_CONF = {
 export const KICK_CONF = { label: 'kick', isSensor: true }
 
 export const BUMPERS = [
-  { x: 77, y: 89 },
-  { x: 106, y: 85 },
-  { x: 87, y: 113 },
+  { x: 80, y: 89 },
+  { x: 108, y: 85 },
+  { x: 89, y: 113 },
 ]
 
 export const BALL_CONF = {
