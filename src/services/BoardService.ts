@@ -108,6 +108,15 @@ export default class BoardService {
     this.scene.sound.play('sling', { volume: 0.2 })
   }
 
+  onHitSecret = () => {
+    const t = this.scene.data.get('secrettime')
+    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
+    this.scene.data.set('secrettime', this.scene.time.now)
+    this.scene.ballService?.holdBall(1500, () =>
+      this.scene.ballService!.fireBall(90, 0.03),
+    )
+  }
+
   onHitWormhole = () => {
     const t = this.scene.data.get('wormholetime')
     if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
@@ -201,6 +210,12 @@ export default class BoardService {
       isStatic: true,
     })
     wormholeSensor.label = 'wormhole'
+
+    const secretSensor = this.scene.matter.add.circle(12, 12, 4, {
+      isSensor: true,
+      isStatic: true,
+    })
+    secretSensor.label = 'secret'
 
     this.outReturns = [
       this.scene.add.sprite(11, 273, 'kicker'),

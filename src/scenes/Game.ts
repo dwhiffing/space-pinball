@@ -95,6 +95,8 @@ export default class Game extends Phaser.Scene {
     } else if (checkBodies('ball', 'hyperspace')) {
       this.boardService!.onHitHyperspace()
     } else if (other.label.includes('spinner')) {
+    } else if (checkBodies('ball', 'secret')) {
+      this.boardService!.onHitSecret()
     } else if (checkBodies('ball', 'wormhole')) {
       this.boardService!.onHitWormhole()
     } else if (other.label.includes('spinner')) {
