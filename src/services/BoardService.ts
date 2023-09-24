@@ -232,7 +232,7 @@ export default class BoardService {
     })
     refuelWarp.label = 'refuel-warp'
 
-    const hyperspaceSensor = this.scene.matter.add.circle(131, 92, 5, {
+    const hyperspaceSensor = this.scene.matter.add.circle(131, 102, 5, {
       isSensor: true,
       isStatic: true,
     })
