@@ -26,6 +26,14 @@ export default class Boot extends Phaser.Scene {
     this.load.audio('flipper', 'assets/flipper.mp3')
     this.load.audio('ball-lost', 'assets/ball-lost.mp3')
     this.load.bitmapFont('clarity', 'assets/clarity.png', 'assets/clarity.xml')
+    this.load.spritesheet('diagonal-arrow', 'assets/diagonal-arrow.png', {
+      frameWidth: 6,
+      frameHeight: 7,
+    })
+    this.load.spritesheet('arrow', 'assets/arrow.png', {
+      frameWidth: 7,
+      frameHeight: 5,
+    })
     this.load.spritesheet('numbers', 'assets/numbers.png', {
       frameWidth: 3,
       frameHeight: 5,

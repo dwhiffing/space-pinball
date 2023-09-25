@@ -3,6 +3,9 @@ import Game from '../scenes/Game'
 
 export default class LightService {
   lightSprites?: Phaser.GameObjects.Sprite[]
+  hyperspaceArrow?: Phaser.GameObjects.Sprite
+  awayArrow?: Phaser.GameObjects.Sprite
+  secretArrow?: Phaser.GameObjects.Sprite
   scene: Game
 
   constructor(scene: Game) {
@@ -58,11 +61,20 @@ export default class LightService {
       -1.57,
       4.71,
     )
+
+    this.hyperspaceArrow = this.scene.add
+      .sprite(105, 155, 'diagonal-arrow')
+      .setFlipX(true)
+    this.awayArrow = this.scene.add.sprite(53, 155, 'diagonal-arrow')
+    this.secretArrow = this.scene.add.sprite(11, 80, 'arrow')
   }
 
   reset = () => {
     this.scene.data.set('lightstate', LIGHT_STATE)
     this.scene.data.set('lightstate', LIGHT_STATE)
+    this.hyperspaceArrow?.setFrame(0)
+    this.awayArrow?.setFrame(0)
+    this.secretArrow?.setFrame(0)
   }
 
   updateTravelLights = () => {

@@ -118,6 +118,7 @@ export const BASE_SCORE = {
   spinner: 500,
   button: 1000,
   asteroid: 500,
+  secret: 10000,
   wormhole: 2000,
   hyperspace: 1000,
   sling: 500,

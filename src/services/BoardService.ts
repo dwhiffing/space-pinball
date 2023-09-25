@@ -169,11 +169,14 @@ export default class BoardService {
 
   onHitSecret = () => {
     const t = this.scene.data.get('secrettime')
-    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
+    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 1000) return
     this.scene.data.set('secrettime', this.scene.time.now)
     this.scene.ballService?.holdBall(1500, () =>
       this.scene.ballService!.fireBall(90, 0.03),
     )
+    this.scene.time.delayedCall(3000, () => {
+      this.onCloseSecretDoor()
+    })
     this.scene.earnScore('secret')
   }
 
@@ -188,11 +191,13 @@ export default class BoardService {
   }
 
   onOpenSecretDoor = () => {
+    this.scene.lightService?.secretArrow?.setFrame(1)
     this.secretDoor!.collisionFilter.group = 4
     this.secretDoor!.collisionFilter.mask = 4
   }
 
   onCloseSecretDoor = () => {
+    this.scene.lightService?.secretArrow?.setFrame(0)
     this.secretDoor!.collisionFilter.group = 3
     this.secretDoor!.collisionFilter.mask = 2
   }
