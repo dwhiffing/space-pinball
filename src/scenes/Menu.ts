@@ -21,6 +21,7 @@ export default class Menu extends Phaser.Scene {
     this.add.rectangle(0, 0, 160, 144, 0x081820).setOrigin(0, 0)
     const title = this.add.image(80, 28, 'title').setOrigin(0.5, 0.5)
     const guy = this.add.sprite(84, 82, 'guy').setOrigin(0.5, 0.5)
+    this.input.keyboard.on('keydown-M', this.onToggleMute)
 
     this.add.tween({
       targets: guy,
@@ -84,5 +85,9 @@ export default class Menu extends Phaser.Scene {
     })
 
     this.sound.play('click')
+  }
+
+  onToggleMute = () => {
+    this.sound.volume = this.sound.volume > 0 ? 0 : 1
   }
 }

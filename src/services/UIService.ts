@@ -9,9 +9,8 @@ export default class UIService {
   constructor(scene: Game) {
     this.scene = scene
 
-    this.scene.input.keyboard.on('keydown-F', () => {
-      this.scene.scale.startFullscreen()
-    })
+    this.scene.input.keyboard.on('keydown-F', this.onFullScreen)
+    this.scene.input.keyboard.on('keydown-M', this.onToggleMute)
 
     this.createUI()
     this.resetUI()
@@ -20,10 +19,20 @@ export default class UIService {
 
   destroy() {
     this.scene.data.events.off('changedata-score', this.resetUI)
+    this.scene.input.keyboard.off('keydown-F', this.onFullScreen)
+    this.scene.input.keyboard.off('keydown-M', this.onToggleMute)
   }
 
   update() {
     this.checkCameraPan()
+  }
+
+  onToggleMute = () => {
+    this.scene.sound.volume = this.scene.sound.volume > 0 ? 0 : 1
+  }
+
+  onFullScreen = () => {
+    this.scene.scale.startFullscreen()
   }
 
   showMessage = (m: string, duration = 3000) => {
