@@ -140,6 +140,12 @@ export default class Game extends Phaser.Scene {
     }
   }
 
+  earnScore = (key: string) => {
+    let baseScore =
+      constants.BASE_SCORE[key as keyof typeof constants.BASE_SCORE] ?? 0
+    if (baseScore > 0) this.data.values.score += baseScore
+  }
+
   setupInput = () => {
     const { onFlipLeftDown, onFlipLeftUp, onFlipRightDown, onFlipRightUp } =
       this.flipperService!

@@ -142,6 +142,7 @@ export default class BoardService {
     )
 
     this.scene.sound.play('sling', { volume: 0.2 })
+    this.scene.earnScore('sling')
   }
 
   onHitAsteroid = (speed: number, asteroid: any) => {
@@ -151,6 +152,7 @@ export default class BoardService {
     this.scene.time.delayedCall(100, () => asteroid.sprite.clearTint())
     asteroid.sprite.data.values.health--
 
+    this.scene.earnScore('asteroid')
     if (asteroid.sprite.data.values.health < 1) {
       this.scene.time.delayedCall(100, () => {
         asteroid.sprite.setAlpha(0)
@@ -167,6 +169,7 @@ export default class BoardService {
     this.scene.ballService?.holdBall(1500, () =>
       this.scene.ballService!.fireBall(90, 0.03),
     )
+    this.scene.earnScore('secret')
   }
 
   onHitWormhole = () => {
@@ -176,15 +179,18 @@ export default class BoardService {
     this.scene.ballService?.holdBall(1500, () =>
       this.scene.ballService!.fireBall(-85, 0.04),
     )
+    this.scene.earnScore('wormhole')
   }
 
   onHitHyperspace = () => {
     const t = this.scene.data.get('hyperspacetime')
+    console.log('wtf', t, Math.abs(t - this.scene.time.now))
     if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
     this.scene.data.set('hyperspacetime', this.scene.time.now)
     this.scene.ballService?.holdBall(1500, () =>
       this.scene.ballService!.fireBall(65, 0.06),
     )
+    this.scene.earnScore('hyperspace')
   }
 
   onHitSpinner = (label: string, velocity: number) => {
@@ -212,6 +218,7 @@ export default class BoardService {
 
     bumper.setFrame(1)
     this.scene.time.delayedCall(150, () => bumper.setFrame(0))
+    this.scene.earnScore('bumper')
   }
 
   playDingSound = (speed: number) => {
