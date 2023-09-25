@@ -104,8 +104,8 @@ export default class FlipperService {
     const flipper = this.scene.matter.add.rectangle(
       x,
       y,
-      25,
-      3,
+      24,
+      4,
       constants.FLIPPER_CONF,
     )
     this.scene.matter.add.worldConstraint(flipper, 0, 0.1, {
@@ -126,17 +126,17 @@ export default class FlipperService {
     if (isLeft) {
       this[`leftLever${k}`] = lever
       this[`flipperImageLeft${k}`] = this.scene.add
-        .sprite(__x - 4, __y + 3, 'flipper', 0)
+        .sprite(__x - 4, __y + 2, 'flipper', 0)
         .setOrigin(0, 0.5)
     } else {
       this[`rightLever${k}`] = lever
       this[`flipperImageRight${k}`] = this.scene.add
-        .sprite(__x - 4 + (FLIPPER_DIST + 8), __y + 3, 'flipper', 0)
+        .sprite(__x - 4 + (FLIPPER_DIST + 8), __y + 2, 'flipper', 0)
         .setOrigin(1, 0.5)
         .setFlipX(true)
     }
 
-    this.scene.matter.add.constraint(flipper, lever, 0, 0.15, {
+    this.scene.matter.add.constraint(flipper, lever, 0, 0.4, {
       pointA: new Phaser.Math.Vector2(FLIPPER_WIDTH + FLIPPER_LEVEL, 0),
       pointB: new Phaser.Math.Vector2(),
     })
@@ -144,11 +144,11 @@ export default class FlipperService {
 }
 
 const FLIPPER_X = 53
-const FLIPPER_Y = 260
+const FLIPPER_Y = 261
 const FLIPPER_LEVEL = 32
-const FLIPPER_WIDTH = -10
+const FLIPPER_WIDTH = -11
 const FLIPPER_DIST = 54
-const FLIP_DURATION = 52
+const FLIP_DURATION = 55
 const DegToRad = Phaser.Math.DegToRad
 const delta = 58
 const MINL = DegToRad(210)
