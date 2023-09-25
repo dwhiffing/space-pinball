@@ -11,9 +11,14 @@ export default class Menu extends Phaser.Scene {
   init(opts: any) {}
 
   create() {
-    this.music = this.sound.add('menu', { volume: 0.3 })
-    this.add.rectangle(0, 0, 160, 144, 0x081820).setOrigin(0, 0)
+    this.music = this.sound.add('menu', { volume: 0 })
+    this.tweens.add({
+      targets: this.music,
+      volume: 0.3,
+      duration: 1500,
+    })
     this.music.play()
+    this.add.rectangle(0, 0, 160, 144, 0x081820).setOrigin(0, 0)
     const title = this.add.image(80, 28, 'title').setOrigin(0.5, 0.5)
     const guy = this.add.sprite(84, 82, 'guy').setOrigin(0.5, 0.5)
 

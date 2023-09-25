@@ -12,6 +12,7 @@ interface IBody extends MatterJS.BodyType {
 }
 
 export default class Game extends Phaser.Scene {
+  music?: Phaser.Sound.BaseSound
   lightService?: LightService
   boardService?: BoardService
   ballService?: BallService
@@ -24,12 +25,15 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    this.data.set('score', 0)
-    this.data.set('balls', constants.DEBUG ? 99 : 3)
+    this.data.set('score', 49000)
+    this.data.set('balls', constants.DEBUG ? 1 : 3)
     this.data.set('rank', 0)
     this.data.set('requiredScore', constants.PLANET_SCORES[0])
     this.data.set('targetPlanet', 0)
     this.data.set('allowcamerapan', true)
+
+    this.music = this.sound.add('game', { volume: 0.35 })
+    this.music.play()
 
     this.boardService = new BoardService(this)
     this.flipperService = new FlipperService(this)
@@ -64,8 +68,14 @@ export default class Game extends Phaser.Scene {
 
   gameOver = () => {
     this.fader?.fade(2000)
-    this.time.delayedCall(2000, () => {
-      this.scene.start('MenuScene')
+
+    this.tweens.add({
+      targets: this.music,
+      volume: 0,
+      duration: 2000,
+      onComplete: () => {
+        this.scene.start('MenuScene')
+      },
     })
   }
 
@@ -81,7 +91,7 @@ export default class Game extends Phaser.Scene {
     if (tp && pp < tp) {
       const n = Math.floor(pp * 16) % 16
 
-      // this.data.values.score += 250
+      // this.data.values.score += 5
 
       if (n !== this.data.values.lastplanetdecimal) {
         this.data.set('lastplanetdecimal', n)
