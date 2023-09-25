@@ -426,6 +426,11 @@ export default class BoardService {
       this.diagonalButton?.setData('hittime', this.scene.time.now)
       if (this.scene.data.values.diagonalButtonHitCount < 9)
         this.scene.data.values.diagonalButtonHitCount++
+      if (this.scene.data.values.diagonalButtonHitCount % 3 === 0) {
+        this.toggleReturn(true, true)
+        this.toggleReturn(false, true)
+      }
+
       this.scene.tweens.add({
         targets: this.diagonalButton,
         x: 58,
