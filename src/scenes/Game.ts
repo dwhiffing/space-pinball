@@ -227,7 +227,8 @@ export default class Game extends Phaser.Scene {
         this.ballService?.fireBall(96, 0.045, 5, 200) // chute
       })
       this.input.keyboard.addKey('R').on('down', () => {
-        this.ballService?.fireBall(96, 0.015, 80, 40) // chute
+        this.ballService?.fireBall(-90, 0.045, 70, 130) // button2
+        // this.ballService?.fireBall(96, 0.015, 80, 40) // chute
       })
     }
 

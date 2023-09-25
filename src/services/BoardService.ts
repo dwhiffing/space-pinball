@@ -109,7 +109,7 @@ export default class BoardService {
 
   onHitKick = () => {
     this.scene.time.delayedCall(500, () => {
-      this.scene.ballService?.applyForceToBall('up', 0.06)
+      this.scene.ballService?.applyForceToBall('up', 0.045)
       const isLeft = this.scene.ballService!.ball!.x < 80
       // @ts-ignore
       const outReturn = this.outReturns!.at(isLeft ? 0 : 1)
@@ -606,7 +606,7 @@ export default class BoardService {
   }
 
   createSlingshot = (x: number, y: number, isLeft: boolean) => {
-    const sling = this.scene.matter.add.rectangle(0, 0, 3, 19, {
+    const sling = this.scene.matter.add.rectangle(0, 0, 4, 19, {
       isStatic: true,
       angle: isLeft ? -0.48 : 0.44,
     }) as IBody
@@ -618,7 +618,7 @@ export default class BoardService {
       .setAlpha(0)
 
     const a = Phaser.Display.Align.BOTTOM_CENTER
-    this.scene.matter.alignBody(sling, isLeft ? x + 4 : x - 4, y + 11, a)
+    this.scene.matter.alignBody(sling, isLeft ? x + 5 : x - 5, y + 11, a)
     sling.label = 'sling'
   }
 
