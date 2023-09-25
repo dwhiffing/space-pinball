@@ -1,0 +1,22 @@
+get extra balls after 100k points
+change bumpers to use collision events to bump instead of restituion
+add upgrading attack bumpers by filling up lights (+500 points per hit)
+skill shot + lights on chute
+better transitions in game music
+better ball graphics
+board decals/light patterns
+center post (between flippers) triggered by something
+gravity well
+
+Skill Shot: extra route through main chute if you plunge short
+
+> Awarded when the Ball travels part way up the Deployment Chute and exits at the bottom of the chute through the Skill Shot Lane.
+> A Skill Shot is not available on a Replay Ball but is available on an Extra Ball.
+> Points are awarded based on how far up the Deployment Chute the Ball traveled as indicated by the Deployment Lights.
+
+        - 1 light  – 15,000 points
+        - 2 lights – 30,000 points
+        - 3 lights – 75,000 points
+        - 4 lights – 30,000 points
+        - 5 lights – 15,000 points
+        - 6 lights –   7500 points
