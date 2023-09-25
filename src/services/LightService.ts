@@ -117,6 +117,24 @@ export default class LightService {
     const [k, i] = label.split(':')
     const state = this.scene.data.get('lightstate')
     state[k][i] = state[k][i] === 0 ? 1 : 0
+    // TODO: bonus sound
+    if (state['base-light'].every((n: number) => n === 1)) {
+      this.scene.time.delayedCall(1500, () => {
+        this.toggleLight('base-light:0')
+        this.toggleLight('base-light:1')
+        this.toggleLight('base-light:2')
+        this.toggleLight('base-light:3')
+        this.scene.data.values.score += 25000
+      })
+    }
+    if (state['post-light'].every((n: number) => n === 1)) {
+      this.scene.time.delayedCall(1500, () => {
+        this.toggleLight('post-light:0')
+        this.toggleLight('post-light:1')
+        this.toggleLight('post-light:2')
+        this.scene.data.values.score += 25000
+      })
+    }
     this.scene.data.set('lightstate', state)
   }
 

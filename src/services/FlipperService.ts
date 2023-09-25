@@ -29,11 +29,11 @@ export default class FlipperService {
 
   onFlip = (__x: number, __y: number, isLeft?: boolean, isDown?: boolean) => {
     if (this.scene.data.values.isBlocked) return
-    if (isDown) {
+    const isExtra = __x !== FLIPPER_X
+    if (isDown && !isExtra) {
       this.scene.sound.play('flipper', { volume: 0.1, rate: 0.5 })
       this.scene.lightService?.flipLights(!!isLeft)
     }
-    const isExtra = __x !== FLIPPER_X
     const k = isExtra ? '2' : ''
     const target = isLeft ? this[`leftTween${k}`] : this[`rightTween${k}`]
     const max = isLeft ? MAXL : MAXR

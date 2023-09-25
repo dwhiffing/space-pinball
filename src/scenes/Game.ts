@@ -198,6 +198,12 @@ export default class Game extends Phaser.Scene {
       this.input.keyboard.addKey('W').on('down', () => {
         this.ballService?.fireBall(-66, 0.075, 70, 240) // hyperspace
       })
+      this.input.keyboard.addKey('E').on('down', () => {
+        this.ballService?.fireBall(96, 0.045, 5, 200) // chute
+      })
+      this.input.keyboard.addKey('R').on('down', () => {
+        this.ballService?.fireBall(96, 0.015, 80, 40) // chute
+      })
     }
 
     this.input.keyboard
