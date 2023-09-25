@@ -25,7 +25,7 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    this.data.set('score', 49000)
+    this.data.set('score', 0)
     this.data.set('balls', constants.DEBUG ? 99 : 3)
     this.data.set('rank', 0)
     this.data.set('requiredScore', constants.PLANET_SCORES[0])

@@ -210,6 +210,7 @@ export default class BoardService {
   }
 
   onHitChuteSensor = () => {
+    this.scene.data.set('ballstarttime', this.scene.time.now)
     this.chuteDoor!.collisionFilter.group = 3
     this.chuteDoor!.collisionFilter.mask = 2
   }
