@@ -92,6 +92,8 @@ export default class Game extends Phaser.Scene {
 
     if (checkBodies('ball', 'refuel-warp')) {
       this.ballService!.warpBall(constants.REFUEL_ZONE, true)
+    } else if (checkBodies('ball', 'chute-sensor')) {
+      this.boardService!.onHitChuteSensor()
     } else if (checkBodies('ball', 'hyperspace')) {
       this.boardService!.onHitHyperspace()
     } else if (other.label.includes('spinner')) {
@@ -129,6 +131,8 @@ export default class Game extends Phaser.Scene {
       this.boardService!.onHitSling(other.position.x < 80, other.sprite)
     } else if (checkBodies('ball', 'hyperspace')) {
       this.boardService!.onHitHyperspace()
+    } else if (checkBodies('ball', 'chute-sensor')) {
+      this.boardService!.onHitChuteSensor()
     } else if (checkBodies('ball', 'secret')) {
       this.boardService!.onHitSecret()
     } else if (checkBodies('ball', 'asteroid')) {

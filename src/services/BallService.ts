@@ -166,6 +166,7 @@ export default class BallService {
       this.scene.data.set('ball-lost', false)
       this.scene.data.values.balls--
       this.warpBall(constants.BALL_START)
+      this.scene.boardService?.resetChuteDoor()
       // if (constants.DEBUG_AUTO_FLIP) this.scene.flipperService!.autoFlip()
     } else {
       this.scene.gameOver()

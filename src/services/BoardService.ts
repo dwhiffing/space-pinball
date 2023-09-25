@@ -20,6 +20,8 @@ export default class BoardService {
   leftDoorSprite?: Phaser.GameObjects.Sprite
   leftDoorBody?: BodyType
   rightDoorBody?: BodyType
+  chuteDoor?: BodyType
+  secretDoor?: BodyType
   bumpers?: IBody[]
   asteroids?: Phaser.GameObjects.Image[]
 
@@ -184,6 +186,16 @@ export default class BoardService {
     this.scene.earnScore('wormhole')
   }
 
+  onHitChuteSensor = () => {
+    this.chuteDoor!.collisionFilter.group = 3
+    this.chuteDoor!.collisionFilter.mask = 2
+  }
+
+  resetChuteDoor = () => {
+    this.chuteDoor!.collisionFilter.group = 4
+    this.chuteDoor!.collisionFilter.mask = 4
+  }
+
   onHitHyperspace = () => {
     const t = this.scene.data.get('hyperspacetime')
     console.log('wtf', t, Math.abs(t - this.scene.time.now))
@@ -266,6 +278,12 @@ export default class BoardService {
     })
     hyperspaceSensor.label = 'hyperspace'
 
+    const chuteSennsor = this.scene.matter.add.circle(37, 32, 6, {
+      isSensor: true,
+      isStatic: true,
+    })
+    chuteSennsor.label = 'chute-sensor'
+
     const wormholeSensor = this.scene.matter.add.circle(32, 123, 4, {
       isSensor: true,
       isStatic: true,
@@ -303,6 +321,17 @@ export default class BoardService {
     this.rightDoorBody = this.scene.matter.add.rectangle(149, 260, 13, 2, {
       isStatic: true,
       angle: -0.35,
+      collisionFilter: { group: 4, mask: 4 },
+    })
+
+    this.secretDoor = this.scene.matter.add.rectangle(10, 54, 3, 53, {
+      angle: 0.45,
+      isStatic: true,
+    })
+
+    this.chuteDoor = this.scene.matter.add.rectangle(48, 28, 3, 15, {
+      angle: -0.65,
+      isStatic: true,
       collisionFilter: { group: 4, mask: 4 },
     })
   }
@@ -408,18 +437,18 @@ export default class BoardService {
       asteroid.setAlpha(0)
       asteroid.setData('health', 0)
       // @ts-ignore
-      asteroid.body.collisionFilter.group = 4
+      asteroid.physicsBody.collisionFilter.group = 4
       // @ts-ignore
-      asteroid.body.collisionFilter.mask = 4
+      asteroid.physicsBody.collisionFilter.mask = 4
     })
     asteroids?.forEach((asteroid) => {
       if (health === 0) return
       asteroid.setAlpha(1)
       asteroid.setData('health', health ?? 3)
       // @ts-ignore
-      asteroid.body.collisionFilter.group = 3
+      asteroid.physicsBody.collisionFilter.group = 3
       // @ts-ignore
-      asteroid.body.collisionFilter.mask = 2
+      asteroid.physicsBody.collisionFilter.mask = 2
     })
   }
 
@@ -442,7 +471,8 @@ export default class BoardService {
     })
     const sprite = this.scene.add.image(x, y, 'asteroid')
     circle.label = 'asteroid'
-    sprite.body = circle
+    //@ts-ignore
+    sprite.physicsBody = circle
     sprite.setData('health', 3)
     //@ts-ignore
     circle.sprite = sprite
