@@ -109,7 +109,7 @@ export default class BoardService {
 
   onHitKick = () => {
     this.scene.time.delayedCall(500, () => {
-      this.scene.ballService?.applyForceToBall('up', 0.045)
+      this.scene.ballService?.applyForceToBall('up', 0.05)
       const isLeft = this.scene.ballService!.ball!.x < 80
       // @ts-ignore
       const outReturn = this.outReturns!.at(isLeft ? 0 : 1)
@@ -581,6 +581,7 @@ export default class BoardService {
         .sprite(p.x, p.y, 'spinner', 0)
         .setData('label', `spinner-${i}`)
         .setData('frame', 0)
+        .setDepth(90)
 
       return sprite
     })
