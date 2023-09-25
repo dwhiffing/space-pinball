@@ -198,8 +198,9 @@ export default class BoardService {
     const t = this.scene.data.get('wormholetime')
     if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 1000) return
     this.scene.data.set('wormholetime', this.scene.time.now)
+    const a = -90 + Phaser.Math.RND.between(-8, 8)
     this.scene.ballService?.holdBall(1500, () =>
-      this.scene.ballService!.fireBall(-85, 0.04),
+      this.scene.ballService!.fireBall(a, 0.04),
     )
     this.scene.earnScore('wormhole')
     this.scene.sound.play('wormhole', { volume: 0.5 })
