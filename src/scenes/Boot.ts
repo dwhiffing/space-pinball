@@ -75,7 +75,7 @@ export default class Boot extends Phaser.Scene {
     this.load.image('diagonal-button', 'assets/diagonal-button.png')
     this.load.spritesheet('bumper', 'assets/bumper.png', {
       frameWidth: 18,
-      frameHeight: 18,
+      frameHeight: 20,
     })
     this.load.spritesheet('light', 'assets/light.png', {
       frameWidth: 6,
@@ -87,7 +87,7 @@ export default class Boot extends Phaser.Scene {
     })
     this.load.spritesheet('post', 'assets/post.png', {
       frameWidth: 3,
-      frameHeight: 12,
+      frameHeight: 14,
     })
     this.load.image('board', 'assets/board.png')
     this.load.image('board-top', 'assets/board-top.png')
