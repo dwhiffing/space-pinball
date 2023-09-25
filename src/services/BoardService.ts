@@ -163,6 +163,13 @@ export default class BoardService {
         asteroid.sprite.setAlpha(0)
         asteroid.collisionFilter.group = 4
         asteroid.collisionFilter.mask = 4
+
+        const isComplete = this.asteroids?.every((a) => a.alpha === 0)
+        if (isComplete) {
+          this.scene.lightService?.awayArrow?.setFrame(0)
+          this.scene.data.values.score +=
+            25000 * (this.scene.data.values.rank + 1)
+        }
       })
     }
   }
@@ -215,18 +222,24 @@ export default class BoardService {
   resetTable = () => {
     this.resetChuteDoor()
     this.onCloseSecretDoor()
-    this.resetAsteroids(0, 1)
-    this.scene.lightService?.reset()
+    this.toggleReturn(true, true)
+    this.toggleReturn(false, true)
   }
 
   onHitHyperspace = () => {
     const t = this.scene.data.get('hyperspacetime')
-    console.log('wtf', t, Math.abs(t - this.scene.time.now))
     if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
     this.scene.data.set('hyperspacetime', this.scene.time.now)
     this.scene.ballService?.holdBall(1500, () =>
-      this.scene.ballService!.fireBall(65, 0.06),
+      this.scene.ballService!.fireBall(65, 0.03),
     )
+    // @ts-ignore
+    if (this.scene.lightService?.hyperspaceArrow?.frame.name === 1) {
+      this.scene.lightService?.hyperspaceArrow?.setFrame(0)
+      this.scene.lightService?.awayArrow?.setFrame(1)
+      const params = constants.ASTEROID_PARAMS[this.scene.data.values.rank ?? 0]
+      this.resetAsteroids(params[0], params[1])
+    }
     this.scene.earnScore('hyperspace')
   }
 
@@ -259,7 +272,12 @@ export default class BoardService {
   }
 
   onHitAwayRamp = () => {
-    if (false) {
+    const t = this.scene.data.get('awayramptime')
+    if ((t ? Math.abs(t - this.scene.time.now) : 9999) < 3000) return
+    this.scene.data.set('awayramptime', this.scene.time.now)
+
+    // @ts-ignore
+    if (this.scene.lightService?.awayArrow?.frame.name === 1) {
       this.scene.ballService!.warpBall(constants.REFUEL_ZONE, true)
     } else {
       this.scene.ballService?.holdBall(1500, () =>
@@ -380,7 +398,7 @@ export default class BoardService {
     )
     this.scene.matter.alignBody(
       board,
-      -100,
+      -91,
       288,
       Phaser.Display.Align.BOTTOM_CENTER,
     )

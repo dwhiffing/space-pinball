@@ -91,6 +91,7 @@ export default class Game extends Phaser.Scene {
 
     if (this.data.values.score >= this.data.values.requiredScore) {
       this.data.values.requiredScore = constants.PLANET_SCORES[index + 1]
+      this.lightService?.hyperspaceArrow?.setFrame(1)
       this.data.values.rank++
     }
   }
@@ -175,8 +176,15 @@ export default class Game extends Phaser.Scene {
       .addKey('Z')
       .on('down', onFlipLeftDown)
       .on('up', onFlipLeftUp)
-    if (constants.DEBUG)
-      this.input.keyboard.addKey('R').on('down', resetBallDebug)
+    if (constants.DEBUG) {
+      // this.input.keyboard.addKey('R').on('down', resetBallDebug)
+      this.input.keyboard.addKey('Q').on('down', () => {
+        this.ballService?.fireBall(-120, 0.085, 70, 190) // away mission
+      })
+      this.input.keyboard.addKey('W').on('down', () => {
+        this.ballService?.fireBall(-66, 0.075, 70, 240) // hyperspace
+      })
+    }
 
     this.input.keyboard
       .addKey('right')

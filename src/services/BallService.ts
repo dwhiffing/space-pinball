@@ -180,13 +180,13 @@ export default class BallService {
       this.scene.time.delayedCall(500, () => {
         // this.fireBall(-90, 0.045, 70, 130) // button2
         // this.fireBall(-120, 0.085, 70, 190) // away mission
+        // this.fireBall(-66, 0.075, 70, 240) // hyperspace
         // this.fireBall(-96, 0.045, 5, 110) // chute
         // this.fireBall(-90, 0.1, 180, 144) // chute2
         // this.fireBall(-90, 0.025, 5, 110) // spinner
         // this.fireBall(-70, 0.045, 20, 110) // button
         // this.fireBall(-100, 0.075, 30, 190) // secret hole
         // this.fireBall(-0, 0.025, 12, 60)// wormhole
-        // this.fireBall(-66, 0.075, 70, 240) // hyperspace
       })
     }
   }

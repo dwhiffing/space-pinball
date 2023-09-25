@@ -115,6 +115,17 @@ export const PLANET_SCORES = [
   50000, 100000, 200000, 400000, 600000, 800000, 1000000, 1500000,
 ]
 
+export const ASTEROID_PARAMS = [
+  [3, 1],
+  [3, 1],
+  [3, 3],
+  [5, 1],
+  [5, 2],
+  [7, 1],
+  [7, 2],
+  [9, 2],
+]
+
 export const BASE_SCORE = {
   bumper: 500, // 1000, 1500, 2000
   spinner: 500,
