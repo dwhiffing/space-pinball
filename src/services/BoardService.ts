@@ -94,6 +94,8 @@ export default class BoardService {
         }
         if (finalFrame === 0 && !playedSound) {
           spinner.data.set('playedSound', true)
+          this.scene.earnScore('spinner')
+
           this.scene.sound.play('click')
         }
       } else if (speed > 0) {
@@ -258,7 +260,7 @@ export default class BoardService {
     })
     refuelWarp.label = 'refuel-warp'
 
-    const hyperspaceSensor = this.scene.matter.add.circle(131, 102, 5, {
+    const hyperspaceSensor = this.scene.matter.add.circle(131, 100, 6, {
       isSensor: true,
       isStatic: true,
     })

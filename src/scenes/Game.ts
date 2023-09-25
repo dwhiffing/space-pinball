@@ -123,8 +123,14 @@ export default class Game extends Phaser.Scene {
 
     if (isBoard) {
       this.boardService!.playDingSound(ball.speed)
+    } else if (checkBodies('ball', 'refuel-warp')) {
+      this.ballService!.warpBall(constants.REFUEL_ZONE, true)
     } else if (checkBodies('ball', 'sling')) {
       this.boardService!.onHitSling(other.position.x < 80, other.sprite)
+    } else if (checkBodies('ball', 'hyperspace')) {
+      this.boardService!.onHitHyperspace()
+    } else if (checkBodies('ball', 'secret')) {
+      this.boardService!.onHitSecret()
     } else if (checkBodies('ball', 'asteroid')) {
       this.boardService!.onHitAsteroid(ball.speed, other)
     } else if (checkBodies('ball', 'bumper')) {
