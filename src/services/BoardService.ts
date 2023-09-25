@@ -21,6 +21,7 @@ export default class BoardService {
   leftDoorBody?: BodyType
   rightDoorBody?: BodyType
   bumpers?: IBody[]
+  asteroids?: Phaser.GameObjects.Image[]
 
   constructor(scene: Game) {
     this.scene = scene
@@ -34,6 +35,8 @@ export default class BoardService {
     this.createKick(10, 265)
     this.createKick(149, 265)
     this.createBumpers()
+    this.createAsteroids()
+    this.resetAsteroids(0, 0)
     this.createButtons()
 
     this.scene.data.set('buttonHitCount', 0)
@@ -139,6 +142,22 @@ export default class BoardService {
     )
 
     this.scene.sound.play('sling', { volume: 0.2 })
+  }
+
+  onHitAsteroid = (speed: number, asteroid: any) => {
+    if (speed < 3) return
+
+    asteroid.sprite.setTintFill(0xe0f8d0)
+    this.scene.time.delayedCall(100, () => asteroid.sprite.clearTint())
+    asteroid.sprite.data.values.health--
+
+    if (asteroid.sprite.data.values.health < 1) {
+      this.scene.time.delayedCall(100, () => {
+        asteroid.sprite.setAlpha(0)
+        asteroid.collisionFilter.group = 4
+        asteroid.collisionFilter.mask = 4
+      })
+    }
   }
 
   onHitSecret = () => {
@@ -357,6 +376,70 @@ export default class BoardService {
         duration: 250,
       })
     }
+  }
+
+  resetAsteroids = (count: number, health: number) => {
+    let asteroids: Phaser.GameObjects.Image[] = this.asteroids!
+    if (count === 5)
+      asteroids = [
+        ...this.asteroids!.slice(1, 4),
+        ...this.asteroids!.slice(6, 8),
+      ]
+    if (count === 3)
+      asteroids = [
+        ...this.asteroids!.slice(2, 3),
+        ...this.asteroids!.slice(6, 8),
+      ]
+    if (count === 7)
+      asteroids = [
+        ...this.asteroids!.slice(1, 4),
+        ...this.asteroids!.slice(5, 9),
+      ]
+    this.asteroids?.forEach((asteroid) => {
+      asteroid.setAlpha(0)
+      asteroid.setData('health', 0)
+      // @ts-ignore
+      asteroid.body.collisionFilter.group = 4
+      // @ts-ignore
+      asteroid.body.collisionFilter.mask = 4
+    })
+    asteroids?.forEach((asteroid) => {
+      if (health === 0) return
+      asteroid.setAlpha(1)
+      asteroid.setData('health', health ?? 3)
+      // @ts-ignore
+      asteroid.body.collisionFilter.group = 3
+      // @ts-ignore
+      asteroid.body.collisionFilter.mask = 2
+    })
+  }
+
+  createAsteroids = () => {
+    this.asteroids = new Array(9)
+      .fill('')
+      .map((b, i) =>
+        this.createAsteroid(
+          -150 + 24 * (i % 5) + (Math.floor(i / 5) === 0 ? 0 : 10),
+          168 + Math.floor(i / 5) * 21,
+        ),
+      )
+  }
+
+  createAsteroid = (x: number, y: number) => {
+    const circle = this.scene.matter.add.circle(x, y, 10, {
+      restitution: 0.7,
+      isStatic: true,
+      collisionFilter: { group: 4, mask: 4 },
+    })
+    const sprite = this.scene.add.image(x, y, 'asteroid')
+    circle.label = 'asteroid'
+    sprite.body = circle
+    sprite.setData('health', 3)
+    //@ts-ignore
+    circle.sprite = sprite
+    sprite.setAlpha(0)
+
+    return sprite
   }
 
   createBumpers = () => {

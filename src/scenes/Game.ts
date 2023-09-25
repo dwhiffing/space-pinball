@@ -125,6 +125,8 @@ export default class Game extends Phaser.Scene {
       this.boardService!.playDingSound(ball.speed)
     } else if (checkBodies('ball', 'sling')) {
       this.boardService!.onHitSling(other.position.x < 80, other.sprite)
+    } else if (checkBodies('ball', 'asteroid')) {
+      this.boardService!.onHitAsteroid(ball.speed, other)
     } else if (checkBodies('ball', 'bumper')) {
       this.boardService!.onHitBumper(ball.speed, other.sprite)
     } else if (checkBodies('ball', 'wormhole')) {

@@ -48,6 +48,7 @@ export default class Boot extends Phaser.Scene {
     })
     this.load.image('sling', 'assets/sling.png')
     this.load.image('button', 'assets/button.png')
+    this.load.image('asteroid', 'assets/asteroid.png')
     this.load.image('title', 'assets/title.png')
     this.load.image('diagonal-button', 'assets/diagonal-button.png')
     this.load.spritesheet('bumper', 'assets/bumper.png', {
