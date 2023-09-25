@@ -59,7 +59,7 @@ export const KICK_CONF = { label: 'kick', isSensor: true }
 
 export const BUMPERS = [
   { x: 80, y: 89 },
-  { x: 108, y: 85 },
+  { x: 107, y: 85 },
   { x: 89, y: 113 },
 ]
 

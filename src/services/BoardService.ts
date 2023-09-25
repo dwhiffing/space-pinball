@@ -631,7 +631,7 @@ export default class BoardService {
       constants.BUMPER_SIZE,
       constants.BUMPER_CONF,
     ) as IBody
-    const _bumperImage = this.scene.add.sprite(x, y, 'bumper')
+    const _bumperImage = this.scene.add.sprite(x, y, 'bumper').setDepth(90)
     bump.sprite = _bumperImage
     const pointA = new Phaser.Math.Vector2(x, y)
     this.scene.matter.add.worldConstraint(bump, 0, 0.1, { pointA })
