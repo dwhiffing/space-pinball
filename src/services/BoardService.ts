@@ -224,6 +224,7 @@ export default class BoardService {
     this.onCloseSecretDoor()
     this.toggleReturn(true, true)
     this.toggleReturn(false, true)
+    this.scene.data.values.isBlocked = false
   }
 
   onHitHyperspace = () => {

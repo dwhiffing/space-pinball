@@ -26,10 +26,11 @@ export default class Game extends Phaser.Scene {
 
   create() {
     this.data.set('score', 49000)
-    this.data.set('balls', constants.DEBUG ? 1 : 3)
+    this.data.set('balls', constants.DEBUG ? 99 : 3)
     this.data.set('rank', 0)
     this.data.set('requiredScore', constants.PLANET_SCORES[0])
     this.data.set('targetPlanet', 0)
+    this.data.set('allowedTilts', 8)
     this.data.set('allowcamerapan', true)
 
     this.music = this.sound.add('game', { volume: 0.35 })
@@ -64,6 +65,9 @@ export default class Game extends Phaser.Scene {
     this.updateTravelStatus()
     this.boardService?.update()
     this.flipperService?.update()
+
+    if (this.data.values.allowedTilts < 8)
+      this.data.values.allowedTilts += 0.003
   }
 
   gameOver = () => {

@@ -28,6 +28,7 @@ export default class FlipperService {
   update() {}
 
   onFlip = (__x: number, __y: number, isLeft?: boolean, isDown?: boolean) => {
+    if (this.scene.data.values.isBlocked) return
     if (isDown) {
       this.scene.sound.play('flipper', { volume: 0.1, rate: 0.5 })
       this.scene.lightService?.flipLights(!!isLeft)

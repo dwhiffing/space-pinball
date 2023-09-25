@@ -62,8 +62,16 @@ export default class BallService {
   }
 
   onTilt = (direction: string) => {
-    this.applyForceToBall(direction, 0.01)
-    this.scene.cameras.main.shake(100, 0.02, true)
+    if (this.scene.data.values.isBlocked) return
+
+    if (this.scene.data.values.allowedTilts > 0) {
+      this.applyForceToBall(direction, 0.01)
+      this.scene.cameras.main.shake(100, 0.02, true)
+      this.scene.data.values.allowedTilts--
+    } else {
+      this.scene.uiService?.showMessage('Tilt!')
+      this.scene.data.values.isBlocked = true
+    }
   }
 
   checkBallSpeed = () => {
@@ -202,6 +210,7 @@ export default class BallService {
   }
 
   onShootStart = () => {
+    if (this.scene.data.values.isBlocked) return
     this.scene.sound.play('click', { volume: 0.5 })
     this.scene.data.set('plungestart', this.scene.time.now)
     const r = this.scene.time.delayedCall(
@@ -218,6 +227,7 @@ export default class BallService {
   }
 
   onShoot = () => {
+    if (this.scene.data.values.isBlocked) return
     if (!this.ball?.body) return
     const body = this.ball?.body as MatterJS.BodyType
     if (!this.scene.data.get('plungestart')) return
