@@ -27,7 +27,7 @@ export const REFUEL_ZONE = { x: -25, y: 140 }
 export const AUTOFLIP_TARGET = 1
 
 // BALL START ----------------------------------
-export const BALL_START = DEBUG ? LEFT_FLIPPER : MAIN_CHUTE
+export const BALL_START = DEBUG ? MAIN_CHUTE : MAIN_CHUTE
 
 export const PLUNGE_MAX = DEBUG ? 500 : 2000
 export const BASE_FRICTION = 0.00035
@@ -128,7 +128,7 @@ export const ASTEROID_PARAMS = [
 
 export const BASE_SCORE = {
   bumper: 500, // 1000, 1500, 2000
-  spinner: 500,
+  spinner: 150,
   button: 2000,
   asteroid: 500,
   secret: 25000,

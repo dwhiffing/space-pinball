@@ -47,7 +47,7 @@ export class Fader {
     const num = Math.floor(this.num)
 
     this.graphics.clear()
-    this.graphics.fillStyle(0x081820)
+    this.graphics.fillStyle(0x081820).setDepth(101)
     const pixels = this.inverted
       ? this.pixels.slice(num)
       : this.pixels.slice(0, num)

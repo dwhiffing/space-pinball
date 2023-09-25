@@ -26,7 +26,7 @@ export default class Game extends Phaser.Scene {
 
   create() {
     this.data.set('score', 0)
-    this.data.set('balls', constants.DEBUG ? 99 : 3)
+    this.data.set('balls', constants.DEBUG ? 99 : 4)
     this.data.set('rank', 0)
     this.data.set('requiredScore', constants.PLANET_SCORES[0])
     this.data.set('targetPlanet', 0)
@@ -55,6 +55,20 @@ export default class Game extends Phaser.Scene {
     this.matter.world.on('collisionactive', this.onCollisionActive)
   }
 
+  destroy() {
+    this.matter.world.off('collisionstart', this.onCollisionStart)
+    this.matter.world.off('collisionactive', this.onCollisionActive)
+
+    this.boardService?.destroy()
+    // this.flipperService?.destroy()
+    this.lightService?.destroy()
+    this.lightService?.destroy()
+    this.lightService?.destroy()
+    this.ballService?.destroy()
+    this.uiService?.destroy()
+    // this.fader?.destroy()
+  }
+
   update() {
     this.fader?.update()
     if (!this.ballService!.ball?.body) return
@@ -72,12 +86,22 @@ export default class Game extends Phaser.Scene {
 
   gameOver = () => {
     this.fader?.fade(2000)
+    this.matter.world.off('collisionstart', this.onCollisionStart)
+    this.matter.world.off('collisionactive', this.onCollisionActive)
 
     this.tweens.add({
       targets: this.music,
       volume: 0,
       duration: 2000,
       onComplete: () => {
+        this.boardService?.destroy()
+        // this.flipperService?.destroy()
+        this.lightService?.destroy()
+        this.lightService?.destroy()
+        this.lightService?.destroy()
+        this.ballService?.destroy()
+        this.uiService?.destroy()
+
         this.scene.start('MenuScene')
       },
     })

@@ -173,7 +173,7 @@ export default class BallService {
   }
 
   resetBall = () => {
-    if (this.scene.data.values.balls > 0) {
+    if (this.scene.data.values.balls >= 0) {
       this.scene.data.set('ball-lost', false)
       this.warpBall(constants.BALL_START)
       this.scene.boardService?.resetTable()
@@ -209,10 +209,9 @@ export default class BallService {
 
     this.scene.data.set('ball-lost', true)
     this.scene.time.delayedCall(constants.DEBUG ? 1 : 1500, this.resetBall)
-    if (diff < 10000) {
+    if (diff < 8000) {
       this.scene.sound.play('ballSaved', { volume: 0.35 })
       this.scene.uiService!.showMessage('Ball saved!')
-      // TODO: ball saved sound
     } else {
       this.scene.sound.play('ball-lost', { volume: 0.35, rate: 0.9 })
       this.scene.uiService!.showMessage('Ball lost')
