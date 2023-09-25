@@ -111,7 +111,9 @@ export const PASS_TOGGLES = [
   })),
 ]
 
-export const PLANET_SCORES = [10000, 20000, 30000, 40000, 50000, 60000, 70000]
+export const PLANET_SCORES = [
+  50000, 100000, 200000, 400000, 600000, 800000, 1000000, 1500000,
+]
 
 export const BASE_SCORE = {
   bumper: 500, // 1000, 1500, 2000

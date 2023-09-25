@@ -258,6 +258,16 @@ export default class BoardService {
     this.scene.earnScore('bumper')
   }
 
+  onHitAwayRamp = () => {
+    if (false) {
+      this.scene.ballService!.warpBall(constants.REFUEL_ZONE, true)
+    } else {
+      this.scene.ballService?.holdBall(1500, () =>
+        this.scene.ballService!.fireBall(45, 0.01),
+      )
+    }
+  }
+
   playDingSound = (speed: number) => {
     const last = this.scene.data.get('lastbumpertime')
     this.scene.data.set('lastdingtime', this.scene.time.now)

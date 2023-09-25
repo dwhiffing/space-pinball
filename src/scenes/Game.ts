@@ -26,6 +26,7 @@ export default class Game extends Phaser.Scene {
   create() {
     this.data.set('score', 0)
     this.data.set('balls', constants.DEBUG ? 99 : 3)
+    this.data.set('rank', 0)
     this.data.set('requiredScore', constants.PLANET_SCORES[0])
     this.data.set('targetPlanet', 0)
     this.data.set('allowcamerapan', true)
@@ -69,18 +70,28 @@ export default class Game extends Phaser.Scene {
   }
 
   updateTravelStatus = () => {
-    let pp = this.data.values.score / this.data.values.requiredScore
+    const index = constants.PLANET_SCORES.findIndex(
+      (s) => this.data.values.requiredScore === s,
+    )
+    const totalPrev = constants.PLANET_SCORES[index - 1] ?? 0
+    let pp =
+      (this.data.values.score - totalPrev) /
+      (this.data.values.requiredScore - totalPrev)
     let tp = this.data.values.targetPlanet
     if (tp && pp < tp) {
       const n = Math.floor(pp * 16) % 16
 
-      // TODO need to increase required score when achieved amount
-      // this.data.values.score += 5
-      pp = this.data.values.score / this.data.values.requiredScore
+      // this.data.values.score += 250
+
       if (n !== this.data.values.lastplanetdecimal) {
         this.data.set('lastplanetdecimal', n)
         this.lightService?.updateTravelLights()
       }
+    }
+
+    if (this.data.values.score >= this.data.values.requiredScore) {
+      this.data.values.requiredScore = constants.PLANET_SCORES[index + 1]
+      this.data.values.rank++
     }
   }
 
@@ -91,7 +102,7 @@ export default class Game extends Phaser.Scene {
     if (!ball) return
 
     if (checkBodies('ball', 'refuel-warp')) {
-      this.ballService!.warpBall(constants.REFUEL_ZONE, true)
+      this.boardService!.onHitAwayRamp()
     } else if (checkBodies('ball', 'chute-sensor')) {
       this.boardService!.onHitChuteSensor()
     } else if (checkBodies('ball', 'hyperspace')) {
@@ -126,7 +137,7 @@ export default class Game extends Phaser.Scene {
     if (isBoard) {
       this.boardService!.playDingSound(ball.speed)
     } else if (checkBodies('ball', 'refuel-warp')) {
-      this.ballService!.warpBall(constants.REFUEL_ZONE, true)
+      this.boardService!.onHitAwayRamp()
     } else if (checkBodies('ball', 'sling')) {
       this.boardService!.onHitSling(other.position.x < 80, other.sprite)
     } else if (checkBodies('ball', 'hyperspace')) {

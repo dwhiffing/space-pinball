@@ -1,4 +1,4 @@
-import { LIGHTS, LIGHT_STATE } from '../constants'
+import { LIGHTS, LIGHT_STATE, PLANET_SCORES } from '../constants'
 import Game from '../scenes/Game'
 
 export default class LightService {
@@ -78,12 +78,20 @@ export default class LightService {
   }
 
   updateTravelLights = () => {
-    let pp = this.scene.data.values.score / this.scene.data.values.requiredScore
+    const index = PLANET_SCORES.findIndex(
+      (s) => this.scene.data.values.requiredScore === s,
+    )
+    const totalPrev = PLANET_SCORES[index - 1] ?? 0
+    let pp =
+      (this.scene.data.values.score - totalPrev) /
+      (this.scene.data.values.requiredScore - totalPrev)
+
     const ls = this.scene.data.values.lightstate
     const n = (pp * 16) % 16
+
     this.scene.data.values.targetPlanet++
     ls['inner-circle-light'] = ls['inner-circle-light'].map(
-      (_: any, i: number) => (Math.floor(pp) === i ? 2 : i > pp ? 0 : 1),
+      (_: any, i: number) => (index === i ? 2 : i > index ? 0 : 1),
     )
     ls['outer-circle-light'] = ls['outer-circle-light'].map(
       (_: any, i: number) => (Math.floor(n) === i ? 2 : i > n ? 0 : 1),
