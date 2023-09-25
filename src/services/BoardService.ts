@@ -40,6 +40,7 @@ export default class BoardService {
     this.createAsteroids()
     this.resetAsteroids(0, 0)
     this.createButtons()
+    this.resetTable()
 
     this.scene.data.set('buttonHitCount', 0)
     this.scene.data.set('diagonalButtonHitCount', 0)
@@ -186,6 +187,16 @@ export default class BoardService {
     this.scene.earnScore('wormhole')
   }
 
+  onOpenSecretDoor = () => {
+    this.secretDoor!.collisionFilter.group = 4
+    this.secretDoor!.collisionFilter.mask = 4
+  }
+
+  onCloseSecretDoor = () => {
+    this.secretDoor!.collisionFilter.group = 3
+    this.secretDoor!.collisionFilter.mask = 2
+  }
+
   onHitChuteSensor = () => {
     this.chuteDoor!.collisionFilter.group = 3
     this.chuteDoor!.collisionFilter.mask = 2
@@ -194,6 +205,13 @@ export default class BoardService {
   resetChuteDoor = () => {
     this.chuteDoor!.collisionFilter.group = 4
     this.chuteDoor!.collisionFilter.mask = 4
+  }
+
+  resetTable = () => {
+    this.resetChuteDoor()
+    this.onCloseSecretDoor()
+    this.resetAsteroids(0, 1)
+    this.scene.lightService?.reset()
   }
 
   onHitHyperspace = () => {
@@ -400,6 +418,8 @@ export default class BoardService {
 
       if (this.scene.data.values.buttonHitCount < 9)
         this.scene.data.values.buttonHitCount++
+      if (this.scene.data.values.buttonHitCount % 3 === 0)
+        this.onOpenSecretDoor()
     } else {
       const t = this.diagonalButton?.getData('hittime') ?? 0
       if (this.scene.time.now - t < 2000) return

@@ -159,12 +159,13 @@ export default class Game extends Phaser.Scene {
   setupInput = () => {
     const { onFlipLeftDown, onFlipLeftUp, onFlipRightDown, onFlipRightUp } =
       this.flipperService!
-    const { onBallLost, onShoot, onShootStart, onTilt } = this.ballService!
+    const { resetBallDebug, onShoot, onShootStart, onTilt } = this.ballService!
     this.input.keyboard
       .addKey('Z')
       .on('down', onFlipLeftDown)
       .on('up', onFlipLeftUp)
-    if (constants.DEBUG) this.input.keyboard.addKey('R').on('down', onBallLost)
+    if (constants.DEBUG)
+      this.input.keyboard.addKey('R').on('down', resetBallDebug)
 
     this.input.keyboard
       .addKey('right')

@@ -7,11 +7,8 @@ export default class LightService {
 
   constructor(scene: Game) {
     this.scene = scene
-
     this.scene.data.events.on('changedata-lightstate', this.changeLightData)
-
-    this.scene.data.set('lightstate', LIGHT_STATE)
-    this.scene.data.set('lightstate', LIGHT_STATE)
+    this.reset()
   }
 
   update() {
@@ -61,6 +58,11 @@ export default class LightService {
       -1.57,
       4.71,
     )
+  }
+
+  reset = () => {
+    this.scene.data.set('lightstate', LIGHT_STATE)
+    this.scene.data.set('lightstate', LIGHT_STATE)
   }
 
   updateTravelLights = () => {
