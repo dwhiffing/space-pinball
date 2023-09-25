@@ -24,7 +24,20 @@ export default class Boot extends Phaser.Scene {
     this.load.audio('plunger', 'assets/plunger.mp3')
     this.load.audio('bumper', 'assets/bumper.mp3')
     this.load.audio('game', 'assets/game.mp3')
+    this.load.audio('missionComplete', 'assets/missionComplete.mp3')
+    this.load.audio('hyperspaceCharged', 'assets/hyperspaceCharged.mp3')
+    this.load.audio('secretHit', 'assets/secretHit.mp3')
+    this.load.audio('button', 'assets/button.mp3')
+    this.load.audio('kick-ball', 'assets/kick-ball.mp3')
+    this.load.audio('tilt', 'assets/tilt.mp3')
+    this.load.audio('launch', 'assets/launch.mp3')
+    this.load.audio('ballSaved', 'assets/ballSaved.mp3')
+    this.load.audio('wormhole', 'assets/wormhole.mp3')
     this.load.audio('flipper', 'assets/flipper.mp3')
+
+    this.load.audio('asteroid-hit', 'assets/asteroid-hit.mp3')
+    this.load.audio('asteroid-destroyed', 'assets/asteroid-destroyed.mp3')
+
     this.load.audio('ball-lost', 'assets/ball-lost.mp3')
     this.load.bitmapFont('clarity', 'assets/clarity.png', 'assets/clarity.xml')
     this.load.spritesheet('diagonal-arrow', 'assets/diagonal-arrow.png', {
@@ -87,6 +100,7 @@ export default class Boot extends Phaser.Scene {
     this.load.xml('refuel-board', 'assets/refuel-board.svg')
     this.load.xml('bounce', 'assets/bounce.svg')
     this.load.xml('flipper', 'assets/flipper.svg')
+    // this.sound.volume = 0
 
     this.load.on('complete', () => {
       progress.destroy()

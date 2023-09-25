@@ -70,6 +70,7 @@ export default class BallService {
       this.scene.data.values.allowedTilts--
     } else {
       this.scene.uiService?.showMessage('Tilt!')
+      this.scene.sound.play('tilt', { volume: 0.5 })
       this.scene.data.values.isBlocked = true
     }
   }
@@ -106,6 +107,8 @@ export default class BallService {
   fireBall = (angle: number, force: number, x?: number, y?: number) => {
     if (x && y) this.warpBall({ x, y })
     const body = this.ball?.body as MatterJS.BodyType
+    this.scene.sound.play('kick-ball', { volume: 0.5 })
+
     this.scene.matter.applyForceFromAngle(body, force, DegToRad(angle))
   }
 
@@ -207,7 +210,7 @@ export default class BallService {
     this.scene.data.set('ball-lost', true)
     this.scene.time.delayedCall(constants.DEBUG ? 1 : 1500, this.resetBall)
     if (diff < 10000) {
-      // this.scene.sound.play('ball-lost', { volume: 0.35, rate: 0.9 })
+      this.scene.sound.play('ballSaved', { volume: 0.35 })
       this.scene.uiService!.showMessage('Ball saved!')
       // TODO: ball saved sound
     } else {

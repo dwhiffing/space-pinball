@@ -159,6 +159,7 @@ export default class BoardService {
 
     this.scene.earnScore('asteroid')
     if (asteroid.sprite.data.values.health < 1) {
+      this.scene.sound.play('asteroid-destroyed')
       this.scene.time.delayedCall(100, () => {
         asteroid.sprite.setAlpha(0)
         asteroid.collisionFilter.group = 4
@@ -167,10 +168,15 @@ export default class BoardService {
         const isComplete = this.asteroids?.every((a) => a.alpha === 0)
         if (isComplete) {
           this.scene.lightService?.awayArrow?.setFrame(0)
+          this.scene.uiService?.showMessage('mission complete!')
+          this.scene.sound.play('missionComplete', { volume: 0.5 })
+          this.scene.data.values.rank++
           this.scene.data.values.score +=
             25000 * (this.scene.data.values.rank + 1)
         }
       })
+    } else {
+      this.scene.sound.play('asteroid-hit')
     }
   }
 
@@ -185,6 +191,7 @@ export default class BoardService {
       this.onCloseSecretDoor()
     })
     this.scene.earnScore('secret')
+    this.scene.sound.play('secretHit', { volume: 0.5 })
   }
 
   onHitWormhole = () => {
@@ -195,9 +202,11 @@ export default class BoardService {
       this.scene.ballService!.fireBall(-85, 0.04),
     )
     this.scene.earnScore('wormhole')
+    this.scene.sound.play('wormhole', { volume: 0.5 })
   }
 
   onOpenSecretDoor = () => {
+    this.scene.uiService?.showMessage('Secret opened!')
     this.scene.lightService?.secretArrow?.setFrame(1)
     this.secretDoor!.collisionFilter.group = 4
     this.secretDoor!.collisionFilter.mask = 4
@@ -238,9 +247,13 @@ export default class BoardService {
     // @ts-ignore
     if (this.scene.lightService?.hyperspaceArrow?.frame.name === 1) {
       this.scene.lightService?.hyperspaceArrow?.setFrame(0)
+      this.scene.uiService?.showMessage('mission opened!')
       this.scene.lightService?.awayArrow?.setFrame(1)
       const params = constants.ASTEROID_PARAMS[this.scene.data.values.rank ?? 0]
       this.resetAsteroids(params[0], params[1])
+      this.scene.sound.play('hyperspaceCharged', { volume: 0.5 })
+    } else {
+      this.scene.sound.play('secretHit', { volume: 0.5 })
     }
     this.scene.earnScore('hyperspace')
   }
@@ -281,7 +294,10 @@ export default class BoardService {
     // @ts-ignore
     if (this.scene.lightService?.awayArrow?.frame.name === 1) {
       this.scene.ballService!.warpBall(constants.REFUEL_ZONE, true)
+      this.scene.sound.play('launch')
     } else {
+      this.scene.sound.play('click')
+      this.scene.earnScore('awayRamp')
       this.scene.ballService?.holdBall(1500, () =>
         this.scene.ballService!.fireBall(45, 0.01),
       )
@@ -444,6 +460,7 @@ export default class BoardService {
       const t = this.button?.getData('hittime') ?? 0
       if (this.scene.time.now - t < 2000) return
       this.button?.setData('hittime', this.scene.time.now)
+      this.scene.sound.play('button', { volume: 0.5 })
       this.scene.tweens.add({
         targets: this.button,
         x: 48,
@@ -458,6 +475,7 @@ export default class BoardService {
     } else {
       const t = this.diagonalButton?.getData('hittime') ?? 0
       if (this.scene.time.now - t < 2000) return
+      this.scene.sound.play('button', { volume: 0.5 })
       this.diagonalButton?.setData('hittime', this.scene.time.now)
       if (this.scene.data.values.diagonalButtonHitCount < 9)
         this.scene.data.values.diagonalButtonHitCount++

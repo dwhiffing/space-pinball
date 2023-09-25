@@ -105,8 +105,9 @@ export default class Game extends Phaser.Scene {
 
     if (this.data.values.score >= this.data.values.requiredScore) {
       this.data.values.requiredScore = constants.PLANET_SCORES[index + 1]
+      this.uiService?.showMessage('hyperspace charged!')
+      this.sound.play('secretHit', { volume: 0.5 })
       this.lightService?.hyperspaceArrow?.setFrame(1)
-      this.data.values.rank++
     }
   }
 
